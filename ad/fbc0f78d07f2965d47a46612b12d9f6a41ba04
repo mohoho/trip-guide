@@ -1,0 +1,88 @@
+tour-hub-web/src/components/AmapLiveMap.tsx
+  s_030109e82d83d4::t_85d9fdd9fa41f1 4
+.cursor/skills/trip-guide-content/SKILL.md
+  s_030109e82d83d4::t_9c3fcd817b02ff 49
+  s_030109e82d83d4::t_77c0d3ff787b0d 5,7,15-16,25,34,46,59,84
+tour-hub-web/public/spots/catalog.json
+  s_030109e82d83d4::t_eb991626035b8c 1-2,4-20
+tour-hub-web/public/spots/yuyuan.json
+  s_030109e82d83d4::t_eb991626035b8c 19,40,61,82,103,118-119
+tour-hub-web/src/lib/exportTarget.ts
+  s_030109e82d83d4::t_3bb989ecfab03b 10
+tour-hub-web/src/lib/amapWalking.ts
+  s_030109e82d83d4::t_85d9fdd9fa41f1 1
+tour-hub-web/src/pages/PublishEditorPage.tsx
+  s_030109e82d83d4::t_104dbd7f5afe9f 284-285,293-310
+  s_030109e82d83d4::t_a8c108480e9108 20,34-73,75-90,94-115,372-373,377,391,398
+  s_030109e82d83d4::t_e4015b3a518246 91-93
+  s_030109e82d83d4::t_46439691eeea98 11,125,675-681,683-684,886
+  s_030109e82d83d4::t_3bb989ecfab03b 444
+  s_030109e82d83d4::t_48f2e4e638af93 311,333-336,339-340
+  s_030109e82d83d4::t_90d7e6d4052149 640
+  s_030109e82d83d4::t_aa09a491ca3503 658
+  s_030109e82d83d4::t_9f1c0238564e5d 18-19,218-219,357-371,374-376,378-390,392-397,462
+  s_030109e82d83d4::t_2b83986a93c6ff 463-464,695-725
+  s_030109e82d83d4::t_643838c390ac06 74,565-568,570-572,575-639,641-651
+tour-hub-web/src/pages/PublishListPage.tsx
+  s_030109e82d83d4::t_3bb989ecfab03b 43,97
+tour-hub-web/src/pages/TourPage.tsx
+  s_030109e82d83d4::t_bb38023b79a898 25-28,251
+  s_030109e82d83d4::t_5b3bec378bf9a3 19
+  s_030109e82d83d4::t_40348dc4e0333f 148,718
+  s_030109e82d83d4::t_a9458f58dcdc9a 252-254
+tour-hub-web/src/lib/catalog.ts
+  s_030109e82d83d4::t_52fdb5918884a3 9,19
+docs/design.md
+  s_030109e82d83d4::t_77c0d3ff787b0d 3,10,21,24
+docs/amap-search.md
+  s_030109e82d83d4::t_07800955c984ca 1-9,11-58,64-115,123-208,211-219
+  s_030109e82d83d4::t_d6d140180cf328 63
+  s_030109e82d83d4::t_f7041ed98632a0 10,59-62,116-122,209-210
+tour-hub-web/src/lib/amapLocate.ts
+  s_030109e82d83d4::t_80b7a9c41f5ad5 122-124,126,133,137,142,148,155-179,206,244-252,254-258,263-265,269
+  s_030109e82d83d4::t_8119ab372dfd1e 8-9,28,39-45,80
+  s_030109e82d83d4::t_ff874bd84ea802 125,127-132,134-136,138-141,143-147,149-154,188,260-262,268
+tour-hub-web/public/spots/ATTRIBUTION.md
+  s_030109e82d83d4::t_d0570c6df67931 3-5,14-19
+tour-hub-web/src/types/attraction.ts
+  s_030109e82d83d4::t_734c6797448694 1-2,10-12,22-25
+tour-hub-web/src/lib/aiDraft.ts
+  s_030109e82d83d4::t_c89d8aecd9d667 86-122,127-150,189-194,240-242,248-252,275,307,312,314-315,317-326,330,333-335
+  s_030109e82d83d4::t_8d902a30278422 255-262,289,331
+  s_030109e82d83d4::t_11a93c0a0b6e3f 1-2,24-31,35-38,42,50-55,60,65-66,195-236
+tour-hub-web/src/components/PublishSpotMap.tsx
+  s_030109e82d83d4::t_2d178c2e547cdf 216-238
+  s_030109e82d83d4::t_21468f6badfbe0 108,260-263,274-275,277,279-282,342,345-346,427,429-430
+  s_030109e82d83d4::t_944b2701aa3348 439,441
+  s_030109e82d83d4::t_f2b2b9a7fff12a 24-25,58,119,134
+  s_030109e82d83d4::t_9f648166b7708a 266,268-270,272,285,288-291,293,298,300-301,303-325,328-340,343-344
+  s_030109e82d83d4::t_a697769dedddc0 112,118,408
+  s_030109e82d83d4::t_7787751c6b9f00 1,4,51-54,59,120-122,382,407,409,428,436-438,440,442-445
+  s_030109e82d83d4::t_9a535e96f9069e 239-259,264-265,267,271,273,276,278,283-284,286-287,292,294-297,299,302,326-327,341
+tour-hub-web/src/lib/draftStore.ts
+  s_030109e82d83d4::t_3bb989ecfab03b 55,83,291
+  s_030109e82d83d4::t_895c40feed8234 253
+  s_030109e82d83d4::t_734c6797448694 34,156-176
+tour-hub-web/vite-plugin-export-to-display.ts
+  s_030109e82d83d4::t_abb7634ec29e89 81
+  s_030109e82d83d4::t_3bb989ecfab03b 5,109,120
+README.md
+  s_030109e82d83d4::t_e91fa52080af50 53-54
+  s_030109e82d83d4::t_77c0d3ff787b0d 13,48-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.49-trip",
+  "base_commit_sha": "adfbc0f78d07f2965d47a46612b12d9f6a41ba04",
+  "prompts": {},
+  "sessions": {
+    "s_030109e82d83d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a13f28-ed10-7242-8c4c-12bfcd09e550",
+        "model": "deepseek-v4.1-flash[1M]"
+      },
+      "human_author": "qmruan <qmruan@trip.com>"
+    }
+  }
+}
