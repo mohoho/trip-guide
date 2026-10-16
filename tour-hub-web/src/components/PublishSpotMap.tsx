@@ -331,6 +331,8 @@ export function PublishSpotMap({
         strokeWeight: 4,
         strokeOpacity: real ? 0.85 : 0.55,
         strokeStyle: real ? 'solid' : 'dashed',
+        showDir: true,
+        dirColor: '#bfdbfe',
         lineJoin: 'round',
         lineCap: 'round',
         zIndex: 60,

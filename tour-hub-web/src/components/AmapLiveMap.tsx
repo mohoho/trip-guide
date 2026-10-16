@@ -241,6 +241,8 @@ export function AmapLiveMap({
       strokeColor: '#3b82f6',
       strokeWeight: 4,
       strokeOpacity: 0.85,
+      showDir: true,
+      dirColor: '#bfdbfe',
       lineJoin: 'round',
       lineCap: 'round',
       zIndex: 80,
