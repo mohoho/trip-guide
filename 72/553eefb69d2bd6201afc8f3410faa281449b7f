@@ -1,0 +1,21 @@
+tour-hub-web/src/components/AmapLiveMap.tsx
+  s_030109e82d83d4::t_1edfee1789161d 244-245
+tour-hub-web/src/components/PublishSpotMap.tsx
+  s_030109e82d83d4::t_1edfee1789161d 334-335
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.50-trip",
+  "base_commit_sha": "72553eefb69d2bd6201afc8f3410faa281449b7f",
+  "prompts": {},
+  "sessions": {
+    "s_030109e82d83d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a13f28-ed10-7242-8c4c-12bfcd09e550",
+        "model": "deepseek-v4.1-flash[1M]"
+      },
+      "human_author": "qmruan <qmruan@trip.com>"
+    }
+  }
+}
