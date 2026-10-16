@@ -1,86 +1,32 @@
-﻿import { newSpotFromCandidate } from './draftStore'
-import type { DraftAttraction, Spot } from '../types/attraction'
-import type { LngLat } from './tourPackage'
+import type { Slide } from './tourPackage'
 
-const OFFSETS: LngLat[] = [
-  { lng: -0.00035, lat: 0.00012 },
-  { lng: -0.00015, lat: 0.00035 },
-  { lng: 0.00018, lat: -0.00008 },
-  { lng: 0.00005, lat: 0.00048 },
-  { lng: 0.00055, lat: -0.00055 },
-]
-
-type AiSpotDraft = {
+/** 待写内容的节点：只给名称，坐标、顺序、数量都已在阶段二定好 */
+export type FillContentInput = {
   name: string
+  description: string
+  city?: string
+  amapContext?: string
+  spots: Array<{ name: string }>
+}
+
+export type FillContentResult = {
+  /** 与 input.spots 按 index 一一对应 */
+  contents: Array<{ poetic: string; slides: Slide[] }>
+  /** 景点简介；AI 没给就留空由人写（阶段一已不再收集简介） */
+  description?: string
+  /** 'ai' = 真实模型返回；'mock' = 本地兜底模板 */
+  source: 'ai' | 'mock'
+  /** source 为 'mock'、或只写回了一部分时的原因，便于在界面上明示 */
+  reason?: string
+}
+
+type AiContentDraft = {
   poetic?: string
-  searchHint?: string
   slides?: Array<{
     title?: string
     bullets?: string[]
     narration?: string
   }>
-}
-
-/** 用户勾选的候选地点：节点数量与顺序以它为准 */
-export type GenerateTarget = {
-  name: string
-  lng: number
-  lat: number
-  address?: string
-}
-
-export type GenerateDraftInput = Pick<
-  DraftAttraction,
-  'name' | 'description' | 'start' | 'city' | 'amapContext'
-> & {
-  /** 给了 targets 就严格按这个列表生成节点（数量、顺序、坐标都以它为准） */
-  targets?: GenerateTarget[]
-}
-
-function mockSpots(attraction: GenerateDraftInput): Spot[] {
-  const base = attraction.name.replace(/\s+/g, '') || '景点'
-  const targets = attraction.targets ?? []
-  const fromContext =
-    attraction.amapContext
-      ?.split('\n')
-      .filter((l) => /^\d+\./.test(l.trim()))
-      .map((l) => l.replace(/^\d+\.\s*/, '').split(' · ')[0]?.trim())
-      .filter(Boolean) || []
-  const names =
-    targets.length > 0
-      ? targets.map((t) => t.name)
-      : fromContext.length >= 3
-        ? fromContext.slice(0, 5)
-        : [`${base}入口`, `${base}主景`, `${base}庭院`, `${base}碑亭`, `${base}出口`]
-  const count = targets.length > 0 ? targets.length : Math.min(5, Math.max(3, names.length))
-  const center = attraction.start
-  return Array.from({ length: count }, (_, i) => {
-    const off = OFFSETS[i % OFFSETS.length]
-    const name = names[i]
-    const target = targets[i]
-    return {
-      id: `draft-${Date.now().toString(36)}-${i}`,
-      name,
-      poetic: `${attraction.name} · 第 ${i + 1} 站`,
-      lng: target ? target.lng : center.lng + off.lng,
-      lat: target ? target.lat : center.lat + off.lat,
-      triggerRadiusMeters: 38,
-      image: '/spots/map-intro.jpg',
-      imageCredit: '',
-      searchHint: `${attraction.city || ''} ${attraction.name} ${name}`.trim(),
-      slides: [
-        {
-          title: name,
-          bullets: [
-            attraction.description.slice(0, 36) || `${attraction.name}的重要停驻点`,
-            '可结合高德地点信息完善讲解',
-            '地图上可拖动校准坐标',
-          ],
-          narration: `欢迎来到${attraction.name}。我们现在来到${name}，请稍作停留，感受这里的气息。`,
-        },
-      ],
-    }
-  })
 }
 
 /**
@@ -116,11 +62,11 @@ function closeTruncatedJson(src: string): string | null {
 }
 
 /**
- * 从模型输出里抠出 JSON。
+ * 从模型输出里抠出 JSON，并确认顶层 key 是个非空数组。
  * 先整体解析；失败说明输出被 max_tokens 截断，则从后往前在每个 `}` 处切一刀、
- * 补齐括号后重试，取第一个能解析出 spots 的结果（把已生成完的节点救回来）。
+ * 补齐括号后重试，取第一个能解析出 key 的结果（把已生成完的部分救回来）。
  */
-function extractJson(text: string): unknown {
+function extractJson(text: string, key: string): Record<string, unknown> {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)
   const raw = (fenced?.[1] || text).trim()
   const start = raw.indexOf('{')
@@ -130,7 +76,7 @@ function extractJson(text: string): unknown {
   const end = body.lastIndexOf('}')
   if (end > 0) {
     try {
-      return JSON.parse(body.slice(0, end + 1))
+      return JSON.parse(body.slice(0, end + 1)) as Record<string, unknown>
     } catch {
       // 落到下面的截断修复
     }
@@ -140,8 +86,8 @@ function extractJson(text: string): unknown {
     const repaired = closeTruncatedJson(body.slice(0, i + 1))
     if (!repaired) continue
     try {
-      const parsed = JSON.parse(repaired) as { spots?: unknown }
-      if (Array.isArray(parsed.spots) && parsed.spots.length > 0) return parsed
+      const parsed = JSON.parse(repaired) as Record<string, unknown>
+      if (Array.isArray(parsed[key]) && parsed[key].length > 0) return parsed
     } catch {
       // 这一刀不行，继续往前切
     }
@@ -150,124 +96,85 @@ function extractJson(text: string): unknown {
   throw new Error('AI 返回的 JSON 无法解析（可能被截断）')
 }
 
-function toSpots(attraction: GenerateDraftInput, drafts: AiSpotDraft[]): Spot[] {
-  const center = attraction.start
-  return drafts.slice(0, 8).map((d, i) => {
-    const off = OFFSETS[i % OFFSETS.length]
-    const name = (d.name || `节点 ${i + 1}`).trim()
-    const slide = d.slides?.[0]
-    const hint = (
-      d.searchHint ||
-      `${attraction.city || ''} ${attraction.name} ${name}`.trim()
-    ).trim()
-    return {
-      id: `draft-${Date.now().toString(36)}-${i}`,
-      name,
-      poetic: (d.poetic || `${attraction.name} · 第 ${i + 1} 站`).trim(),
-      lng: center.lng + off.lng,
-      lat: center.lat + off.lat,
-      triggerRadiusMeters: 38,
-      image: '/spots/map-intro.jpg',
-      imageCredit: '',
-      searchHint: hint,
-      slides: [
-        {
-          title: (slide?.title || name).trim(),
-          bullets:
-            Array.isArray(slide?.bullets) && slide!.bullets!.length > 0
-              ? slide!.bullets!.map((b) => String(b).trim()).filter(Boolean).slice(0, 5)
-              : [`${name}是${attraction.name}的重要停驻点`],
-          narration: (
-            slide?.narration || `欢迎来到${attraction.name}。这里是${name}，请稍作停留。`
-          ).trim(),
-        },
-      ],
-    } as Spot
-  })
+/** 单个节点的兜底内容（未接通 AI、或某一段缺失时用） */
+function templateContent(
+  input: FillContentInput,
+  index: number,
+  nodeName: string,
+): { poetic: string; slides: Slide[] } {
+  return {
+    poetic: `${input.name} · 第 ${index + 1} 站`,
+    slides: [
+      {
+        title: nodeName,
+        bullets: [
+          input.description.slice(0, 36) || `${nodeName}是${input.name}的重要停驻点`,
+          '可结合高德地点信息完善讲解',
+          '地图上可拖动校准坐标',
+        ],
+        narration: `欢迎来到${input.name}。我们现在来到${nodeName}，请稍作停留，感受这里的气息。`,
+      },
+    ],
+  }
 }
 
-export type GenerateDraftResult = {
-  spots: Spot[]
-  /** 'ai' = 真实模型返回；'mock' = 本地兜底模板 */
-  source: 'ai' | 'mock'
-  /** source 为 'mock' 时的原因，便于在界面上明示 */
-  reason?: string
+/** AI 的一段内容 → 节点内容；缺失的字段逐项回落模板 */
+function toContent(
+  draft: AiContentDraft | undefined,
+  input: FillContentInput,
+  index: number,
+  nodeName: string,
+): { poetic: string; slides: Slide[] } {
+  const tpl = templateContent(input, index, nodeName)
+  if (!draft) return tpl
+  const slide = draft.slides?.[0]
+  const bullets = Array.isArray(slide?.bullets)
+    ? slide.bullets.map((b) => String(b).trim()).filter(Boolean).slice(0, 5)
+    : []
+  return {
+    poetic: (draft.poetic || tpl.poetic).trim(),
+    slides: [
+      {
+        title: (slide?.title || tpl.slides[0].title).trim(),
+        bullets: bullets.length > 0 ? bullets : tpl.slides[0].bullets,
+        narration: (slide?.narration || tpl.slides[0].narration).trim(),
+      },
+    ],
+  }
 }
 
 /**
- * 把 AI 产出的节点对齐到勾选的候选列表 —— 数量、顺序、坐标都以候选为准。
- * 先按名称匹配 AI 节点（再按包含关系、再按同位置兜底）；候选没匹配上的用占位节点补；
- * AI 多出来的节点直接丢弃。
+ * 为**已定好**的节点逐个写讲解内容 —— 只产出文案，不产出坐标、不改名称，
+ * 数量与顺序严格按传入的 spots 一一对应。失败回落本地模板。
  */
-function alignToTargets(attraction: GenerateDraftInput, generated: Spot[]): Spot[] {
-  const targets = attraction.targets ?? []
-  if (targets.length === 0) return generated
-
-  const norm = (s: string) => s.replace(/\s+/g, '').toLowerCase()
-  const pool = generated.map((spot) => ({ spot, used: false }))
-  const stamp = Date.now().toString(36)
-
-  return targets.map((t, i) => {
-    let hit = pool.find((p) => !p.used && norm(p.spot.name) === norm(t.name))
-    if (!hit) {
-      hit = pool.find(
-        (p) =>
-          !p.used &&
-          (norm(p.spot.name).includes(norm(t.name)) || norm(t.name).includes(norm(p.spot.name))),
-      )
-    }
-    if (!hit && pool[i] && !pool[i].used) hit = pool[i]
-    if (hit) hit.used = true
-
-    const base = hit
-      ? hit.spot
-      : newSpotFromCandidate(
-          { name: t.name, location: { lng: t.lng, lat: t.lat }, address: t.address },
-          i,
-        )
-    return {
-      ...base,
-      id: `spot-${stamp}-${i + 1}`,
-      name: base.name || t.name,
-      lng: t.lng,
-      lat: t.lat,
-      searchHint: base.searchHint || `${attraction.city || ''} ${attraction.name} ${t.name}`.trim(),
-    }
+export async function fillSpotContent(input: FillContentInput): Promise<FillContentResult> {
+  const names = input.spots.map((s) => s.name)
+  const mock = (reason: string): FillContentResult => ({
+    contents: names.map((n, i) => templateContent(input, i, n)),
+    source: 'mock',
+    reason,
   })
-}
 
-/** 调用 DeepSeek；把高德地点上下文一并输入。失败回落 mock */
-export async function generateDraftSpots(
-  attraction: GenerateDraftInput,
-): Promise<GenerateDraftResult> {
+  if (names.length === 0) return mock('没有节点可写讲解')
+
   const baseUrl = import.meta.env.VITE_DEEPSEEK_BASE_URL
   const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY
   const model = import.meta.env.VITE_DEEPSEEK_MODEL || 'deepseek-chat'
 
   if (!baseUrl || !apiKey) {
-    return {
-      spots: mockSpots(attraction),
-      source: 'mock',
-      reason: '未配置 VITE_DEEPSEEK_BASE_URL / VITE_DEEPSEEK_API_KEY',
-    }
+    return mock('未配置 VITE_DEEPSEEK_BASE_URL / VITE_DEEPSEEK_API_KEY')
   }
 
-  const targets = attraction.targets ?? []
-  const system = `你是文旅导览内容策划。根据景点信息与高德地图检索到的真实地点，生成${
-    targets.length > 0 ? `严格 ${targets.length} 个` : ' 3～4 个'
-  }导览节点。${
-    targets.length > 0
-      ? '\n必须与「本次必须覆盖的地点」逐一对应（名称与顺序一致），不要增加、删除、合并或替换节点。'
-      : ''
-  }
-优先选用高德返回的真实地点名称与游览顺序；可补充必要过渡点，但不要编造不存在的建筑。
+  const system = `你是文旅导览内容策划。请为给定的 ${names.length} 个导览节点各写一段讲解，并顺手写好景点简介。
+节点名称、数量与顺序都已经确定，必须与给定列表严格一一对应：
+- 不要增加、删除、合并、替换或改名任何节点
+- 不要输出坐标、地址或地图检索词
 只输出一个 JSON 对象，不要其它说明。格式：
 {
-  "spots": [
+  "description": "景点简介，约80～120字，用于列表与封面；不要用「第几站」这类导览用语",
+  "contents": [
     {
-      "name": "节点中文名（尽量与高德地点名一致）",
       "poetic": "简短诗意副标题",
-      "searchHint": "用于高德地图检索的关键词，含城市与景点名，如：上海 豫园 三穗堂",
       "slides": [
         {
           "title": "讲解标题",
@@ -279,15 +186,17 @@ export async function generateDraftSpots(
   ]
 }`
 
-  const user = `景点名称：${attraction.name}
-城市/区域：${attraction.city || '（未知）'}
-简介：${attraction.description || '（无）'}
+  const user = `景点名称：${input.name}
+城市/区域：${input.city || '（未知）'}
+简介：${input.description || '（无）'}
 
 【高德地图地点信息】
-${attraction.amapContext || '（暂无，请按常识规划合理游览顺序）'}
+${input.amapContext || '（暂无）'}
 
-${targets.length > 0 ? `\n【本次必须覆盖的地点（共 ${targets.length} 个，按此顺序各生成 1 个节点）】\n${targets.map((t, i) => `${i + 1}. ${t.name}`).join('\n')}\n` : ''}
-请基于以上高德地点生成实地可走的导览节点；searchHint 要便于再次地图定位。`
+【本次要写讲解的节点（共 ${names.length} 个，按此顺序各输出 1 段）】
+${names.map((n, i) => `${i + 1}. ${n}`).join('\n')}
+
+请按同一顺序输出与节点数量相同的 contents 数组。`
 
   try {
     const res = await fetch(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
@@ -316,22 +225,31 @@ ${targets.length > 0 ? `\n【本次必须覆盖的地点（共 ${targets.length}
     if (!content) throw new Error('AI 无内容')
     const truncated = choice?.finish_reason === 'length'
 
-    let parsed: { spots?: AiSpotDraft[] }
+    let parsed: { description?: unknown; contents?: AiContentDraft[] }
     try {
-      parsed = extractJson(content) as { spots?: AiSpotDraft[] }
+      parsed = extractJson(content, 'contents') as { description?: unknown; contents?: AiContentDraft[] }
     } catch (e) {
       throw truncated
         ? new Error('AI 输出被截断（max_tokens 不足），未取到完整 JSON')
         : e
     }
-    if (!Array.isArray(parsed.spots) || parsed.spots.length === 0) {
-      throw new Error('AI JSON 无 spots')
+    const drafts = Array.isArray(parsed.contents) ? parsed.contents : []
+    if (drafts.length === 0) throw new Error('AI JSON 无 contents')
+    if (truncated) console.warn('[aiDraft] 输出被截断，已用完整部分解析出内容')
+
+    return {
+      contents: names.map((n, i) => toContent(drafts[i], input, i, n)),
+      description:
+        typeof parsed.description === 'string' ? parsed.description.trim() : undefined,
+      source: 'ai',
+      reason:
+        drafts.length < names.length
+          ? `AI 只返回了 ${drafts.length}/${names.length} 段，其余用模板补齐`
+          : undefined,
     }
-    if (truncated) console.warn('[aiDraft] 输出被截断，已用完整部分解析出节点')
-    return { spots: alignToTargets(attraction, toSpots(attraction, parsed.spots)), source: 'ai' }
   } catch (e) {
     const reason = e instanceof Error ? e.message : '未知错误'
     console.warn('[aiDraft] fallback mock:', reason, e)
-    return { spots: mockSpots(attraction), source: 'mock', reason }
+    return mock(reason)
   }
 }

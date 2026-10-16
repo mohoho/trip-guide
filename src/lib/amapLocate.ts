@@ -192,16 +192,23 @@ function formatPoiLine(p: AmapPoi, i: number): string {
   return parts.join(' · ')
 }
 
-/** 把高德 POI 整理成可喂给 AI 的文本 */
-export function buildAmapContextText(area: AmapPoi, nearby: AmapPoi[]): string {
+/** 主景区那几行文本（不含周边地点列表），阶段一预览与 AI 上下文共用 */
+export function buildMainPoiText(area: AmapPoi): string {
   const region = [area.pname, area.cityname, area.adname].filter(Boolean).join('')
-  const lines = [
+  return [
     `主景区：${area.name}`,
     region ? `行政区：${region}` : '',
     area.type ? `类型：${area.type}` : '',
     area.address ? `地址：${area.address}` : '',
     `坐标：${area.location.lng.toFixed(5)}, ${area.location.lat.toFixed(5)}`,
   ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+/** 把高德 POI 整理成可喂给 AI 的文本 */
+export function buildAmapContextText(area: AmapPoi, nearby: AmapPoi[]): string {
+  const lines = [buildMainPoiText(area)]
   if (nearby.length > 0) {
     lines.push(`周边/相关地点（${NEARBY_RADIUS_M}m 内优先，来自高德检索，可作导览节点参考）：`)
     nearby.forEach((p, i) => lines.push(formatPoiLine(p, i)))

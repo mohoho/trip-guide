@@ -5,12 +5,10 @@
 ## 仓库
 
 ```
-trip-guide/
-├── tour-hub-web/                        # 统一应用（包名 trip-guide）
-│   ├── public/spots/                    # 唯一已发布数据源（catalog + 各景点文件）
-│   └── src/lib/tourPackage.ts
-├── .cursor/skills/trip-guide-content/   # 外部 AI 生产导览包
-├── docs/screenshots/                    # README 展示截图
+trip-guide/                               # 仓库根即应用（包名 trip-guide）
+├── public/spots/                         # 唯一已发布数据源（catalog + 各景点文件）
+├── src/lib/tourPackage.ts
+├── docs/
 └── README.md
 ```
 
@@ -25,17 +23,20 @@ trip-guide/
 
 ## 发布流程
 
-1. **确定范围**：名称、城市、简介；高德检索景区与周边地点  
-2. **地点与内容**：把高德地点喂给 AI → 生成讲解节点 → 再定位到地图；同一屏改文案/传图/拖标记后发布  
+1. **确定范围**（`/publish/:id`）：名称、城市；高德检索景区与周边地点 → 勾选候选；「相对位置」画布看主景点与已选地点的方位
+2. **地点与内容**（`/publish/:id`，地图选点工作台）：用勾选结果生成节点 →「按名称定位」用高德刷新坐标 → 拖标记校准 → 拖绿标定游客起点；全部节点写过文案后才可发布
+3. **内容创作**（`/publish/:id/content`，独立页、不挂地图）：「AI 生成讲解」按节点逐个写文案、并顺带写好景点简介 → 逐条改文案 / 传图 → 发布；点「调整地点」退回第 2 步重新拖坐标
+
+**坐标在第 2 步定、文案与简介在第 3 步写**，两边互不覆盖（重跑 AI 不动坐标，重定位不动文案）。详见 `docs/note/01-发布编辑器-地图选点与内容创作.md`。
 
 ## 路由
 
-`/` 前台 · `/tour/:id` 导览 · `/publish` 后台 · `/publish/:id` 编辑器
+`/` 前台 · `/tour/:id` 导览 · `/publish` 后台 · `/publish/:id` 编辑器（阶段一 / 二）· `/publish/:id/content` 内容创作
 
 ## 本地
 
 ```bash
-cd tour-hub-web && npm install && npm run dev
+npm install && npm run dev
 ```
 
 环境变量：`VITE_AMAP_KEY`、`VITE_AMAP_SECURITY_CODE`、`VITE_DEEPSEEK_*`

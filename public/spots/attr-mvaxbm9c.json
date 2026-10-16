@@ -4,10 +4,10 @@
   "name": "红山动物园",
   "description": "动物园",
   "start": {
-    "lng": 118.800474,
-    "lat": 32.091258
+    "lng": 118.802932,
+    "lat": 32.091808
   },
-  "zoom": 17.5,
+  "zoom": 17,
   "spots": [
     {
       "id": "spot-mvaxdqn7-1",
@@ -157,9 +157,9 @@
       ]
     },
     {
-      "id": "spot-mvaxdqn7-8",
+      "id": "spot-mvbb28ds-8",
       "name": "红山森林动物园-澳洲区",
-      "poetic": "南半球风，袋鼠跃原",
+      "poetic": "",
       "lng": 118.805705,
       "lat": 32.088713,
       "triggerRadiusMeters": 38,
@@ -167,18 +167,16 @@
       "imageCredit": "",
       "slides": [
         {
-          "title": "澳洲区：把南半球草原搬进红山",
+          "title": "红山森林动物园-澳洲区",
           "bullets": [
-            "展示澳洲代表性动物",
-            "可观察袋鼠、鸸鹋等物种",
-            "位于园区东南角，适合亲子游览"
+            "地址：和燕路168号红山森林动物园内(东南角)"
           ],
-          "narration": "澳洲区位于红山森林动物园东南角，把南半球的草原气息带进南京。这里能看到袋鼠、鸸鹋等澳洲代表动物。袋鼠用强健后腿跳跃，尾巴像平衡杆。观察它们晒太阳、觅食和育幼，仿佛走进一片遥远的南方旷野。"
+          "narration": "这里是红山森林动物园-澳洲区。"
         }
       ]
     },
     {
-      "id": "spot-mvaxdqn7-9",
+      "id": "spot-mvbb28ds-9",
       "name": "红山森林动物园考拉馆",
       "poetic": "",
       "lng": 118.804402,
@@ -197,7 +195,7 @@
       ]
     },
     {
-      "id": "spot-mvaxdqn7-10",
+      "id": "spot-mvbb28ds-10",
       "name": "红山森林动物园两栖爬行馆",
       "poetic": "",
       "lng": 118.806307,
@@ -216,7 +214,7 @@
       ]
     },
     {
-      "id": "spot-mvaxdqn7-11",
+      "id": "spot-mvbb28ds-11",
       "name": "红山森林动物园-新虎园",
       "poetic": "",
       "lng": 118.804676,
@@ -236,5 +234,5 @@
     }
   ],
   "coverImage": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-1.jpg",
-  "publishedAt": 1792158882642
+  "publishedAt": 1792175589345
 }

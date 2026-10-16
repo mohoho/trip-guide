@@ -30,4 +30,6 @@ export interface DraftAttraction {
   coverImage: string
   createdAt: number
   updatedAt: number
+  /** 阶段一/二里上次停在哪一步，进入 /publish/:id 时恢复；草稿态字段，不进发布契约 */
+  lastStage?: 1 | 2
 }

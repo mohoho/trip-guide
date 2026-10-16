@@ -132,6 +132,17 @@ export function deleteDraft(id: string): boolean {
   return true
 }
 
+/**
+ * 节点文案是否还是新建时的占位内容 —— 「已编辑 / 未编辑」的唯一判定口径。
+ * 三种占位：带显式标记、没有任何要点、要点只剩高德自动写入的「地址：」行。
+ */
+export function isSpotPlaceholder(spot: Spot): boolean {
+  const bullets = (spot.slides[0]?.bullets || []).map((b) => b.trim()).filter(Boolean)
+  if (bullets.length === 0) return true
+  if (bullets.some((b) => b.includes('待完善讲解要点'))) return true
+  return bullets.every((b) => b.startsWith('地址：'))
+}
+
 export function newSpotAt(pos: LngLat, index: number): Spot {
   const n = index + 1
   return {

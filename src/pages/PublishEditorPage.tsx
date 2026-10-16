@@ -1,40 +1,38 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  ImagePlus,
   MapPin,
   Plus,
   Route,
-  Sparkles,
   Trash2,
 } from 'lucide-react'
 import { PublishSpotMap, type PublishMapApi } from '../components/PublishSpotMap'
 import { CityRegionSelect } from '../components/CityRegionSelect'
-import { generateDraftSpots } from '../lib/aiDraft'
-import { buildAmapContextText, locateAttractionOnMap, resolveAttractionScope } from '../lib/amapLocate'
-import { newSpotAt, newSpotFromCandidate, publishDraft, saveDraft, ensureEditableDraft } from '../lib/draftStore'
+import { SpotRelativeMap } from '../components/SpotRelativeMap'
+import { buildMainPoiText, locateAttractionOnMap, resolveAttractionScope } from '../lib/amapLocate'
+import {
+  newSpotAt,
+  newSpotFromCandidate,
+  publishDraft,
+  saveDraft,
+  ensureEditableDraft,
+  isSpotPlaceholder,
+} from '../lib/draftStore'
 import type { CandidatePoi, DraftAttraction, Spot } from '../types/attraction'
 import type { LngLat } from '../lib/tourPackage'
 
 type EditorStage = 1 | 2
 
-function readImageFile(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result || ''))
-    reader.onerror = () => reject(new Error('图片读取失败'))
-    reader.readAsDataURL(file)
-  })
-}
-
 type CandidateListProps = {
   candidates: CandidatePoi[]
   pickedCount: number
   emptyHint: string
+  /** 阶段二是否已经有节点：有则按钮变成「更新节点」，按当前勾选同步 */
+  hasSpots: boolean
   onToggle: (name: string) => void
   onSetAll: (picked: boolean) => void
   onGenerate: () => void
@@ -45,6 +43,7 @@ function CandidateList({
   candidates,
   pickedCount,
   emptyHint,
+  hasSpots,
   onToggle,
   onSetAll,
   onGenerate,
@@ -107,7 +106,7 @@ function CandidateList({
         disabled={pickedCount === 0}
         className="w-full cursor-pointer rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs hover:bg-[#f3f4f6] disabled:opacity-45"
       >
-        用勾选的候选生成节点
+        {hasSpots ? '更新节点' : '用勾选的候选生成节点'}
       </button>
     </div>
   )
@@ -124,9 +123,8 @@ export function PublishEditorPage() {
   const [mapCenter, setMapCenter] = useState<LngLat | null>(null)
   const [showRoute, setShowRoute] = useState(false)
   const [resolving, setResolving] = useState(false)
-  const [generating, setGenerating] = useState(false)
+  const [locating, setLocating] = useState(false)
   const mapApiRef = useRef<PublishMapApi | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -140,17 +138,12 @@ export function PublishEditorPage() {
       setDraft(item)
       setSelectedId(item.spots[0]?.id ?? null)
       setMapCenter(item.start)
-      setStage(item.spots.length > 0 || item.status === 'published' ? 2 : 1)
+      setStage(item.lastStage ?? (item.spots.length > 0 || item.status === 'published' ? 2 : 1))
     })()
     return () => {
       cancelled = true
     }
   }, [id, navigate])
-
-  const selected = useMemo(
-    () => draft?.spots.find((s) => s.id === selectedId) || null,
-    [draft, selectedId],
-  )
 
   const persist = (next: DraftAttraction) => {
     const saved = saveDraft(next)
@@ -169,22 +162,6 @@ export function PublishEditorPage() {
       ...draft,
       spots: draft.spots.map((s) => (s.id === spotId ? { ...s, ...patch } : s)),
     })
-  }
-
-  const updateSelectedSlide = (field: 'title' | 'bullets' | 'narration', value: string) => {
-    if (!draft || !selected) return
-    const slides = [...selected.slides]
-    const slide = { ...slides[0] }
-    if (field === 'bullets') {
-      slide.bullets = value
-        .split('\n')
-        .map((l) => l.trim())
-        .filter(Boolean)
-    } else {
-      slide[field] = value
-    }
-    slides[0] = slide
-    updateSpot(selected.id, { slides, name: field === 'title' ? value || selected.name : selected.name })
   }
 
   const moveSpot = (index: number, dir: -1 | 1) => {
@@ -233,6 +210,14 @@ export function PublishEditorPage() {
     }
   }
 
+  /** 切阶段并记住落点；同一 handler 里刚 persist 过时要把新 draft 传进来（否则会被旧闭包覆盖） */
+  const gotoStage = (next: EditorStage, base?: DraftAttraction) => {
+    const current = base ?? draft
+    if (!current) return
+    persist({ ...current, lastStage: next })
+    setStage(next)
+  }
+
   const goStage2 = async () => {
     if (!draft || resolving) return
     if (!draft.name.trim()) {
@@ -240,115 +225,55 @@ export function PublishEditorPage() {
       return
     }
     // 尚未检索范围时自动检索一次
-    if (!draft.amapContext?.trim()) {
+    let working = draft
+    if (!working.amapContext?.trim()) {
       const saved = await onResolveScope()
       if (!saved) return
+      working = saved
     }
+    persist({ ...working, lastStage: 2 })
     setStage(2)
     window.setTimeout(() => {
-      const d = getDraftSnapshot()
-      if (d) {
-        mapApiRef.current?.setCenter(d.start)
-        mapApiRef.current?.setZoom(d.zoom)
-      }
+      mapApiRef.current?.setCenter(working.start)
+      mapApiRef.current?.setZoom(working.zoom)
     }, 200)
   }
 
-  // 闭包里读最新 draft 较麻烦，用 state 的函数式不够；用 ref 更稳
-  const draftRef = useRef(draft)
-  draftRef.current = draft
-  const getDraftSnapshot = () => draftRef.current
-
-  /** 阶段二：高德地点 + AI 内容一次完成，再回写地图坐标 */
-  const onGenerateAndLocate = async () => {
-    if (!draft || generating || resolving) return
-    if (!draft.name.trim()) {
-      setToast('请先填写景点名称')
+  /**
+   * 阶段二「按名称定位」：沿用原「AI 生成并定位」里的定位那一段。
+   * 只回写 spots —— 起点由人拖或「以选中节点为起点」决定，不采用返回的 start。
+   */
+  const onLocateSpots = async () => {
+    if (!draft || locating || resolving) return
+    if (draft.spots.length === 0) {
+      setToast('还没有节点，先勾选候选或手动加点')
       return
     }
-
-    setGenerating(true)
+    setLocating(true)
+    setToast('正在按名称定位各节点…')
     try {
-      let working = draft
-      if (!working.amapContext?.trim()) {
-        setToast('先检索高德地点，再生成导览…')
-        setResolving(true)
-        try {
-          const scope = await resolveAttractionScope(working)
-          working = persist({
-            ...working,
-            start: scope.start,
-            zoom: scope.zoom,
-            city: scope.city || working.city,
-            amapContext: scope.amapContext,
-            areaPoi: scope.areaPoi,
-            candidates: scope.nearbyPois.map((p) => ({ ...p, picked: true })),
-          })
-          setMapCenter(scope.start)
-        } finally {
-          setResolving(false)
-        }
-      }
-
-      // 勾了候选：AI 只看到勾选的，且节点数量 / 顺序以勾选为准
-      const picked = (working.candidates || []).filter((c) => c.picked)
-      if (picked.length > 0 && working.areaPoi) {
-        working = persist({ ...working, amapContext: buildAmapContextText(working.areaPoi, picked) })
-      }
-      const targets = picked.map((c) => ({
-        name: c.name,
-        address: c.address,
-        lng: c.location.lng,
-        lat: c.location.lat,
-      }))
-
+      const located = await locateAttractionOnMap(draft)
+      const saved = persist({ ...draft, spots: located.spots })
       setToast(
-        targets.length > 0
-          ? `AI 正在为勾选的 ${targets.length} 个地点写讲解…`
-          : 'AI 正在结合高德地点生成导览内容…',
-      )
-      const generated = await generateDraftSpots({ ...working, targets })
-      const spots = generated.spots
-      working = persist({
-        ...working,
-        spots,
-        coverImage: spots[0]?.image || working.coverImage,
-      })
-      setSelectedId(spots[0]?.id ?? null)
-
-      setToast('正在把节点定位到高德地图…')
-      const located = await locateAttractionOnMap(working)
-      const saved = persist({
-        ...working,
-        spots: located.spots,
-        start: located.start,
-        zoom: located.zoom,
-      })
-      setMapCenter(located.start)
-      setSelectedId(saved.spots[0]?.id ?? null)
-      window.setTimeout(() => {
-        mapApiRef.current?.setCenter(located.start)
-        mapApiRef.current?.setZoom(located.zoom)
-      }, 200)
-      const aiNote =
-        generated.source === 'ai'
-          ? ''
-          : `；AI 未接通（${generated.reason || '未知原因'}），已用模板内容`
-      setToast(
-        located.locatedCount > 0
-          ? `已生成 ${saved.spots.length} 站，并定位 ${located.locatedCount} 个节点；可改文案、传图、拖标记${aiNote}`
-          : `已生成 ${saved.spots.length} 站${aiNote}；坐标需在地图上拖动校准`,
+        `已定位 ${located.locatedCount}/${saved.spots.length} 个节点；未命中的落在景区附近，可拖动校准`,
       )
     } catch (e) {
-      setToast(e instanceof Error ? e.message : '生成失败')
+      setToast(e instanceof Error ? e.message : '定位失败')
     } finally {
-      setGenerating(false)
+      setLocating(false)
     }
   }
 
+  const onGoContent = (spotId?: string) => {
+    if (!draft || draft.spots.length === 0) return
+    navigate(`/publish/${draft.id}/content${spotId ? `?spot=${spotId}` : ''}`)
+  }
+
+  /** 新节点落在当前地图中心 */
   const onAddSpot = () => {
     if (!draft) return
-    const spot = newSpotAt(draft.start, draft.spots.length)
+    const center = mapApiRef.current?.getCenter() ?? draft.start
+    const spot = newSpotAt(center, draft.spots.length)
     const spots = [...draft.spots, spot]
     persist({ ...draft, spots })
     setSelectedId(spot.id)
@@ -368,58 +293,62 @@ export function PublishEditorPage() {
     persist({ ...draft, candidates: (draft.candidates || []).map((c) => ({ ...c, picked })) })
   }
 
-  /** 用勾选的候选直接生成节点（坐标已就位，不再请求高德） */
-  const createSpotsFromCandidates = (): boolean => {
-    if (!draft) return false
-    const pickedCandidates = (draft.candidates || []).filter((c) => c.picked)
-    if (pickedCandidates.length === 0) {
+  /** 用勾选的候选直接生成节点（坐标已就位，不再请求高德）；返回落盘后的草稿 */
+  /**
+   * 以当前勾选为准同步阶段二节点：取消勾选的候选节点删掉、新勾选的追加，
+   * 已存在节点保留原有的名字/坐标/文案；手加的节点不受影响（它不对应任何候选）。
+   */
+  const createSpotsFromCandidates = (): DraftAttraction | null => {
+    if (!draft) return null
+    const picked = (draft.candidates || []).filter((c) => c.picked)
+    if (picked.length === 0) {
       setToast('请先勾选候选地点')
-      return false
+      return null
     }
-    const seen = new Set(draft.spots.map((s) => s.name))
+
+    /** 节点 ⇄ 候选的对应键：优先用生成时留下的 searchHint，改名后也能认出来 */
+    const spotKey = (s: Spot) => s.searchHint || s.name
+    const pickedNames = new Set(picked.map((c) => c.name))
+    const candidateNames = new Set((draft.candidates || []).map((c) => c.name))
+
+    const kept: Spot[] = []
+    let removed = 0
+    for (const s of draft.spots) {
+      const key = spotKey(s)
+      // 只有「来自候选、且该候选已被取消勾选」的节点才删；手加节点与认不出来的节点都留着
+      if (candidateNames.has(key) && !pickedNames.has(key)) {
+        removed += 1
+        continue
+      }
+      kept.push(s)
+    }
+
+    const seen = new Set(kept.map(spotKey))
     const added: Spot[] = []
-    let index = draft.spots.length
-    for (const c of pickedCandidates) {
+    for (const c of picked) {
       if (seen.has(c.name)) continue
       seen.add(c.name)
-      added.push(newSpotFromCandidate(c, index))
-      index += 1
+      added.push(newSpotFromCandidate(c, kept.length + added.length))
       if (added.length >= 12) break
     }
-    if (added.length === 0) {
-      setToast('勾选的候选都已经在节点里了')
-      return false
-    }
-    persist({ ...draft, spots: [...draft.spots, ...added] })
-    const first = added[0]
-    setSelectedId(first.id)
-    setMapCenter({ lng: first.lng, lat: first.lat })
-    setToast(`已按勾选添加 ${added.length} 个节点；改文案 / 传图即可`)
-    return true
-  }
 
-  const onUploadImage = async (file: File | null) => {
-    if (!draft || !selected || !file) return
-    if (!file.type.startsWith('image/')) {
-      setToast('请选择图片文件')
-      return
+    if (added.length === 0 && removed === 0) {
+      setToast('阶段二节点已与勾选一致，无需更新')
+      return null
     }
-    try {
-      const dataUrl = await readImageFile(file)
-      const patch: Partial<Spot> = {
-        image: dataUrl,
-        imageCredit: file.name,
-      }
-      const nextSpots = draft.spots.map((s) => (s.id === selected.id ? { ...s, ...patch } : s))
-      persist({
-        ...draft,
-        spots: nextSpots,
-        coverImage: draft.coverImage === selected.image || !draft.coverImage ? dataUrl : draft.coverImage,
-      })
-      setToast('图片已上传')
-    } catch {
-      setToast('图片读取失败')
+
+    const saved = persist({ ...draft, spots: [...kept, ...added] })
+    const focus = added[0] || kept[0]
+    if (focus) {
+      setSelectedId(focus.id)
+      setMapCenter({ lng: focus.lng, lat: focus.lat })
     }
+    const changes = [
+      added.length > 0 ? `新增 ${added.length} 个` : '',
+      removed > 0 ? `移除 ${removed} 个` : '',
+    ].filter(Boolean)
+    setToast(`已按勾选更新节点：${changes.join('、')}；可改名或拖标记校准`)
+    return saved
   }
 
   const onPublish = async () => {
@@ -458,10 +387,11 @@ export function PublishEditorPage() {
     )
   }
 
-  const busy = resolving || generating
+  const busy = resolving || locating
   const candidates = draft.candidates || []
-  const pickedCandidates = candidates.filter((c) => c.picked)
-  const pickedCount = pickedCandidates.length
+  const pickedCount = candidates.filter((c) => c.picked).length
+  const writtenCount = draft.spots.filter((s) => !isSpotPlaceholder(s)).length
+  const allWritten = draft.spots.length > 0 && writtenCount === draft.spots.length
 
   return (
     <div className="h-screen flex flex-col bg-[#f7f8fa] text-[#111827]">
@@ -489,7 +419,7 @@ export function PublishEditorPage() {
         <div className="hidden md:flex items-center gap-1 rounded-lg bg-[#f3f4f6] p-0.5">
           <button
             type="button"
-            onClick={() => setStage(1)}
+            onClick={() => gotoStage(1)}
             className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
               stage === 1 ? 'bg-white text-[#111827] shadow-sm' : 'text-[#6b7280] hover:text-[#111827]'
             }`}
@@ -533,24 +463,16 @@ export function PublishEditorPage() {
             <>
               <button
                 type="button"
-                onClick={() => setStage(1)}
+                onClick={() => gotoStage(1)}
                 className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm hover:bg-[#f3f4f6]"
               >
                 上一步
               </button>
               <button
                 type="button"
-                onClick={() => void onGenerateAndLocate()}
-                disabled={busy}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm hover:bg-[#f3f4f6] disabled:opacity-50"
-              >
-                <Sparkles size={14} />
-                {generating ? '生成中…' : 'AI 生成并定位'}
-              </button>
-              <button
-                type="button"
-                onClick={onPublish}
-                disabled={busy}
+                onClick={() => void onPublish()}
+                disabled={busy || !allWritten}
+                title={allWritten ? undefined : '所有节点都写过文案后才能发布'}
                 className="rounded-lg bg-[#3b82f6] text-white px-3.5 py-1.5 text-sm hover:bg-[#2563eb] disabled:opacity-50"
               >
                 发布
@@ -595,27 +517,13 @@ export function PublishEditorPage() {
                   <p className="mt-1 text-[11px] text-[#9ca3af]">数据来自高德行政区查询（DistrictSearch）</p>
                 </label>
 
-                <label className="block">
-                  <span className="text-xs text-[#9ca3af]">简介</span>
-                  <textarea
-                    value={draft.description}
-                    onChange={(e) => updateDraft({ description: e.target.value })}
-                    rows={6}
-                    placeholder="简述景区特色、游览重点，供 AI 写讲解稿"
-                    className="mt-1 w-full resize-none rounded-lg border border-black/8 bg-[#f9fafb] px-3 py-2.5 text-sm outline-none focus:border-[#3b82f6]/50 focus:bg-white"
-                  />
-                </label>
-              </section>
-
-              {/* 右：高德范围 + 候选地点 */}
-              <section className="grid gap-5 xl:grid-cols-2 xl:items-start">
-                <div className="space-y-3 rounded-2xl border border-black/[0.06] bg-white p-5">
+                <div className="space-y-2 border-t border-black/5 pt-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium">高德范围</p>
-                      <p className="mt-0.5 text-xs text-[#9ca3af]">
+                      <p className="text-sm font-medium text-[#111827]">主景区</p>
+                      <p className="mt-0.5 text-[11px] text-[#9ca3af]">
                         {draft.amapContext
-                          ? `起点 ${draft.start.lng.toFixed(5)}, ${draft.start.lat.toFixed(5)}`
+                          ? `坐标 ${draft.start.lng.toFixed(5)}, ${draft.start.lat.toFixed(5)}`
                           : '尚未检索'}
                       </p>
                     </div>
@@ -623,7 +531,7 @@ export function PublishEditorPage() {
                       type="button"
                       onClick={() => void onResolveScope()}
                       disabled={busy}
-                      className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#111827] px-3 py-1.5 text-sm text-white hover:bg-black disabled:opacity-50"
+                      className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[#111827] px-3 py-1.5 text-sm text-white hover:bg-black disabled:opacity-50"
                     >
                       <MapPin size={14} />
                       {resolving ? '检索中…' : draft.amapContext ? '重新检索' : '检索景区'}
@@ -631,21 +539,48 @@ export function PublishEditorPage() {
                   </div>
                   {draft.amapContext ? (
                     <pre className="max-h-64 overflow-y-auto rounded-lg bg-[#f9fafb] px-3 py-2 text-[11px] leading-relaxed text-[#4b5563] whitespace-pre-wrap font-sans">
-                      {draft.amapContext}
+                      {draft.areaPoi ? buildMainPoiText(draft.areaPoi) : draft.amapContext}
                     </pre>
                   ) : (
-                    <p className="text-sm text-[#9ca3af]">填写名称后点「检索景区」，确认旅游范围再进入下一步。</p>
+                    <p className="text-sm text-[#9ca3af]">填写名称后点「检索景区」，确认主景区再进入下一步。</p>
                   )}
+                </div>
+              </section>
+
+              {/* 右：相对位置 + 候选地点 */}
+              <section className="grid gap-5">
+                <div className="space-y-3 rounded-2xl border border-black/[0.06] bg-white p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium">候选地点</p>
+                    <p className="text-[11px] text-[#9ca3af]">
+                      主景点与已选地点的方位示意，不按比例尺 · 点圆点取消选中
+                    </p>
+                  </div>
+                  <SpotRelativeMap
+                    main={
+                      draft.areaPoi
+                        ? {
+                            name: draft.areaPoi.name,
+                            lng: draft.areaPoi.location.lng,
+                            lat: draft.areaPoi.location.lat,
+                          }
+                        : undefined
+                    }
+                    points={candidates.filter((c) => c.picked)}
+                    onToggle={toggleCandidate}
+                  />
                 </div>
 
                 <CandidateList
                   candidates={candidates}
                   pickedCount={pickedCount}
                   emptyHint="尚无候选：点左侧「检索景区」，会自动扫描景区周边地点"
+                  hasSpots={draft.spots.length > 0}
                   onToggle={toggleCandidate}
                   onSetAll={setAllCandidates}
                   onGenerate={() => {
-                    if (createSpotsFromCandidates()) setStage(2)
+                    const saved = createSpotsFromCandidates()
+                    if (saved) gotoStage(2, saved)
                   }}
                 />
               </section>
@@ -656,18 +591,18 @@ export function PublishEditorPage() {
         <div className="flex-1 min-h-0 flex">
           <aside className="w-[min(100%,380px)] shrink-0 border-r border-black/5 bg-white flex flex-col min-h-0">
             <div className="p-4 space-y-3 border-b border-black/5 shrink-0 max-h-[52vh] overflow-y-auto">
-              <p className="text-xs text-[#9ca3af]">阶段二 · 高德地点 + AI 导览内容</p>
+              <p className="text-xs text-[#9ca3af]">阶段二 · 地图选点</p>
               <p className="text-sm text-[#6b7280] leading-relaxed">
-                一次生成讲解并落到地图；左侧改文案/传图，右侧拖标记校准。
+                勾选候选、按名称定位、拖标记校准坐标；文案留到「内容创作」再写。
               </p>
               <button
                 type="button"
-                onClick={() => void onGenerateAndLocate()}
-                disabled={busy}
+                onClick={() => void onLocateSpots()}
+                disabled={busy || draft.spots.length === 0}
                 className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#111827] text-white px-3 py-2 text-sm hover:bg-black disabled:opacity-50"
               >
-                <Sparkles size={15} />
-                {generating ? '生成中…' : draft.spots.length ? '重新生成并定位' : 'AI 生成并定位'}
+                <MapPin size={15} />
+                {locating ? '定位中…' : '按名称定位'}
               </button>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -692,48 +627,24 @@ export function PublishEditorPage() {
                   手动加点
                 </button>
               </div>
-
-              {pickedCandidates.length > 0 && (
-                <div className="space-y-2 rounded-xl border border-black/8 bg-[#f9fafb] p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-medium text-[#6b7280]">
-                      阶段一已选地点
-                      <span className="ml-1 text-[#9ca3af] tabular-nums">
-                        {pickedCandidates.length}
-                      </span>
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setStage(1)}
-                      className="cursor-pointer text-[11px] text-[#3b82f6]"
-                    >
-                      修改
-                    </button>
-                  </div>
-                  <ol className="max-h-40 space-y-0.5 overflow-y-auto">
-                    {pickedCandidates.map((c, i) => (
-                      <li key={c.name} className="flex items-center gap-2 px-1 py-0.5">
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#111827] text-[10px] text-white">
-                          {i + 1}
-                        </span>
-                        <span className="min-w-0 truncate text-xs text-[#111827]">{c.name}</span>
-                      </li>
-                    ))}
-                  </ol>
-                  <p className="text-[10px] text-[#9ca3af]">生成节点时按这个列表的数量与顺序走</p>
-                </div>
-              )}
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto">
               {draft.spots.length === 0 ? (
                 <p className="px-4 py-10 text-center text-sm text-[#9ca3af]">
-                  点上方「AI 生成并定位」，会把高德地点喂给 AI
+                  回「1. 确定范围」勾选候选生成节点，或点上方「手动加点」
                 </p>
               ) : (
                 <div className="px-3 py-2 space-y-1">
+                  <div className="flex items-center justify-between gap-2 px-1">
+                    <p className="text-xs font-medium text-[#6b7280]">导览节点</p>
+                    <p className="text-[11px] text-[#9ca3af] tabular-nums">
+                      已编辑 {writtenCount}/{draft.spots.length}
+                    </p>
+                  </div>
                   {draft.spots.map((spot, index) => {
                     const active = spot.id === selectedId
+                    const unwritten = isSpotPlaceholder(spot)
                     return (
                       <div
                         key={spot.id}
@@ -741,10 +652,18 @@ export function PublishEditorPage() {
                           active ? 'bg-[#eff6ff]' : 'hover:bg-[#f9fafb]'
                         }`}
                       >
-                        <button
-                          type="button"
-                          className="flex-1 flex items-center gap-2 text-left min-w-0"
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          className="flex-1 flex items-center gap-2 text-left min-w-0 cursor-pointer"
                           onClick={() => {
+                            setSelectedId(spot.id)
+                            setMapCenter({ lng: spot.lng, lat: spot.lat })
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.target !== e.currentTarget) return
+                            if (e.key !== 'Enter' && e.key !== ' ') return
+                            e.preventDefault()
                             setSelectedId(spot.id)
                             setMapCenter({ lng: spot.lng, lat: spot.lat })
                           }}
@@ -752,13 +671,30 @@ export function PublishEditorPage() {
                           <span className="w-5 h-5 rounded-full bg-[#111827] text-white text-[11px] flex items-center justify-center shrink-0">
                             {index + 1}
                           </span>
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm">{spot.name}</span>
+                          <span className="block min-w-0">
+                            <span className="flex items-center gap-1.5 min-w-0">
+                              <span className="truncate text-sm">{spot.name}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onGoContent(spot.id)
+                                }}
+                                title={unwritten ? '去内容创作写这段讲解' : '去内容创作改这段讲解'}
+                                className={`shrink-0 cursor-pointer rounded border px-1.5 py-0.5 text-[10px] ${
+                                  unwritten
+                                    ? 'border-amber-300 text-amber-600 hover:bg-amber-50'
+                                    : 'border-black/10 text-[#6b7280] hover:bg-[#f3f4f6]'
+                                }`}
+                              >
+                                {unwritten ? '未编辑' : '已编辑'}
+                              </button>
+                            </span>
                             <span className="block text-[11px] text-[#9ca3af] tabular-nums">
                               {spot.lng.toFixed(4)}, {spot.lat.toFixed(4)}
                             </span>
                           </span>
-                        </button>
+                        </div>
                         <button
                           type="button"
                           disabled={index === 0}
@@ -792,87 +728,30 @@ export function PublishEditorPage() {
                 </div>
               )}
 
-              {selected && (
-                <div className="border-t border-black/5 p-4 space-y-3">
-                  <p className="text-xs font-medium text-[#6b7280]">节点内容</p>
-                  <label className="block">
-                    <span className="text-xs text-[#9ca3af]">名称</span>
-                    <input
-                      value={selected.name}
-                      onChange={(e) => updateSpot(selected.id, { name: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-xs text-[#9ca3af]">诗意副标题</span>
-                    <input
-                      value={selected.poetic}
-                      onChange={(e) => updateSpot(selected.id, { poetic: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
-                    />
-                  </label>
-                  <div>
-                    <span className="text-xs text-[#9ca3af]">实景图</span>
-                    <div className="mt-1 rounded-lg border border-black/8 overflow-hidden bg-[#f3f4f6]">
-                      <div className="aspect-[16/10]">
-                        {selected.image ? (
-                          <img src={selected.image} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-xs text-[#9ca3af]">
-                            未上传
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex justify-end px-2 py-2 border-t border-black/5 bg-white">
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="inline-flex items-center gap-1 text-xs text-[#3b82f6]"
-                        >
-                          <ImagePlus size={13} />
-                          上传
-                        </button>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            void onUploadImage(e.target.files?.[0] || null)
-                            e.target.value = ''
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <label className="block">
-                    <span className="text-xs text-[#9ca3af]">讲解标题</span>
-                    <input
-                      value={selected.slides[0]?.title || ''}
-                      onChange={(e) => updateSelectedSlide('title', e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-xs text-[#9ca3af]">要点（每行一条）</span>
-                    <textarea
-                      value={(selected.slides[0]?.bullets || []).join('\n')}
-                      onChange={(e) => updateSelectedSlide('bullets', e.target.value)}
-                      rows={3}
-                      className="mt-1 w-full resize-none rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-xs text-[#9ca3af]">口播文案</span>
-                    <textarea
-                      value={selected.slides[0]?.narration || ''}
-                      onChange={(e) => updateSelectedSlide('narration', e.target.value)}
-                      rows={4}
-                      className="mt-1 w-full resize-none rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
-                    />
-                  </label>
-                </div>
-              )}
+              <div className="border-t border-black/5 p-4 space-y-2">
+                <p className="text-xs font-medium text-[#6b7280]">游客起点</p>
+                <p className="text-[11px] text-[#9ca3af] tabular-nums">
+                  {draft.start.lng.toFixed(5)}, {draft.start.lat.toFixed(5)}
+                </p>
+                <p className="text-[10px] text-[#9ca3af]">
+                  直接拖地图上的绿色「起」标记即可挪动
+                </p>
+              </div>
+
+              <div className="border-t border-black/5 p-4 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => onGoContent()}
+                  disabled={busy || draft.spots.length === 0}
+                  className="w-full inline-flex items-center justify-center gap-1 rounded-lg bg-[#111827] text-white px-3 py-2 text-sm hover:bg-black disabled:opacity-50"
+                >
+                  内容创作
+                  <ArrowRight size={14} />
+                </button>
+                <p className="text-[10px] text-[#9ca3af]">
+                  逐站写文案；全部写完（{writtenCount}/{draft.spots.length}）才能发布
+                </p>
+              </div>
             </div>
           </aside>
 
@@ -899,7 +778,7 @@ export function PublishEditorPage() {
               </div>
             )}
             <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-[#6b7280] bg-white/90 px-3 py-1.5 rounded-full border border-black/5 shadow-sm">
-              拖标记校准 · 绿色「起」为游客起点
+              拖标记校准位置 · 拖绿标定游客起点 · 列表顺序即游览顺序
             </p>
           </section>
         </div>

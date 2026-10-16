@@ -209,6 +209,7 @@ export function TourPage() {
       setActiveNodeId(nearest.node.id)
       setSlideIndex(0)
       setPanelOpen(true)
+      speakNodeIntro(nearest.node)
     } else if (!nearest && current && !target) {
       setActiveNodeId(null)
       setSlideIndex(0)
@@ -423,6 +424,13 @@ export function TourPage() {
     [voices],
   )
 
+  /** 手动模式下节点成为当前讲解点：自动读一遍该节点的口播（对齐自动导览的"抵达即讲"） */
+  const speakNodeIntro = (node: TourNode) => {
+    if (!synthRef.current) return
+    const text = node.slides[0]?.narration || ''
+    if (text) speak(text)
+  }
+
   // 自动导览：Gate 解除后从第一章开始
   useEffect(() => {
     if (mode === 'auto' && autoStarted && tourPhase === 'idle') {
@@ -468,7 +476,10 @@ export function TourPage() {
     setActiveNodeId(node.id)
     setSlideIndex(0)
     setPanelOpen(true)
-    routeTo({ lng: node.lng, lat: node.lat })
+    routeTo({ lng: node.lng, lat: node.lat }, () => {
+      if (modeRef.current !== 'manual') return
+      speakNodeIntro(node)
+    })
   }
 
   const onMapClick = (pos: LngLat) => {
@@ -720,13 +731,6 @@ export function TourPage() {
         {panelOpen && (
           <div className="absolute top-3 right-3 w-[min(94vw,440px)] sm:w-[min(48vw,560px)] lg:w-[min(46vw,620px)] flex flex-col gap-2 z-20 pointer-events-none">
             <div className="rounded-2xl border border-black/5 bg-white/95 backdrop-blur-md overflow-hidden shadow-lg pointer-events-auto">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-black/5">
-                <span className="text-sm font-medium">讲解</span>
-                <span className="text-[11px] text-[#9ca3af]">
-                  {mapReady ? '路网已就绪' : '载入地图…'}
-                </span>
-              </div>
-
               <div className="p-3.5">
                 <div className="aspect-presentation relative rounded-xl overflow-hidden bg-[#f3f4f6]">
                   {activeSlide && activeNode ? (
