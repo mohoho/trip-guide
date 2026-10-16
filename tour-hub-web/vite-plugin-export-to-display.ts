@@ -3,9 +3,22 @@ import path from 'node:path'
 import type { Plugin, Connect } from 'vite'
 
 const DATA_DIR = './public/spots'
+const MEDIA_EXT = /\.(jpe?g|png|webp|gif)$/i
 
 function resolveDataDir(root: string) {
   return path.resolve(root, DATA_DIR)
+}
+
+/** 图片只能落在 public/spots 下；挡掉绝对路径与 .. 穿越 */
+function resolveMediaFile(root: string, rel: string): string | null {
+  if (!rel || !MEDIA_EXT.test(rel)) return null
+  if (rel.startsWith('/') || rel.startsWith('\\') || rel.includes('\0')) return null
+  const parts = rel.split(/[\\/]+/)
+  if (parts.some((p) => p === '' || p === '.' || p === '..')) return null
+  const baseDir = resolveDataDir(root)
+  const abs = path.resolve(baseDir, ...parts)
+  if (!abs.startsWith(baseDir + path.sep)) return null
+  return abs
 }
 
 function readJson<T>(file: string): T | null {
@@ -69,16 +82,20 @@ function mergeCatalog(existing: Catalog | null, pkg: PublishedPkg): Catalog {
   }
 }
 
-function readBody(req: Connect.IncomingMessage): Promise<string> {
+function readBuffer(req: Connect.IncomingMessage): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = []
     req.on('data', (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)))
-    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+    req.on('end', () => resolve(Buffer.concat(chunks)))
     req.on('error', reject)
   })
 }
 
-/** 开发态：发布写入本应用 public/spots */
+async function readBody(req: Connect.IncomingMessage): Promise<string> {
+  return (await readBuffer(req)).toString('utf8')
+}
+
+/** 开发态：图片落成文件、包体写入本应用 public/spots */
 export function exportToDisplayPlugin(): Plugin {
   let root = process.cwd()
 
@@ -90,6 +107,34 @@ export function exportToDisplayPlugin(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split('?')[0] || ''
+
+        // 图片二进制落盘：包 JSON 里只留路径，不再内嵌 base64
+        if (url === '/__trip_guide/media' && req.method === 'POST') {
+          res.setHeader('Content-Type', 'application/json; charset=utf-8')
+          try {
+            const rel = new URL(req.url || '', 'http://localhost').searchParams.get('path') || ''
+            const file = resolveMediaFile(root, rel)
+            if (!file) {
+              res.statusCode = 400
+              res.end(JSON.stringify({ ok: false, error: `非法图片路径: ${rel}` }))
+              return
+            }
+            const buf = await readBuffer(req)
+            if (!buf.length) {
+              res.statusCode = 400
+              res.end(JSON.stringify({ ok: false, error: '图片内容为空' }))
+              return
+            }
+            fs.mkdirSync(path.dirname(file), { recursive: true })
+            fs.writeFileSync(file, buf)
+            res.end(JSON.stringify({ ok: true, mediaPath: rel, bytes: buf.length }))
+          } catch (e) {
+            res.statusCode = 500
+            res.end(JSON.stringify({ ok: false, error: e instanceof Error ? e.message : '图片写入失败' }))
+          }
+          return
+        }
+
         if (url !== '/__trip_guide/export' || req.method !== 'POST') {
           next()
           return

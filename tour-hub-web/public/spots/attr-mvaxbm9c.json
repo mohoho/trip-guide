@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "id": "attr-mvaxbm9c",
+  "name": "红山动物园",
+  "description": "动物园",
+  "start": {
+    "lng": 118.800474,
+    "lat": 32.091258
+  },
+  "zoom": 17.5,
+  "spots": [
+    {
+      "id": "spot-mvaxdqn7-1",
+      "name": "猴山",
+      "poetic": "灵猿跃石，喧闹成林",
+      "lng": 118.803273,
+      "lat": 32.089986,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-1.jpg",
+      "imageCredit": "3135c7b58cb1ba4355377e47bb12d172.jpeg",
+      "slides": [
+        {
+          "title": "猴山：红山最灵动的开场",
+          "bullets": [
+            "紧邻主入口片区，步行即可到达",
+            "观察猕猴群居、理毛与等级互动",
+            "请勿投喂，保持安全观赏距离"
+          ],
+          "narration": "从红山森林动物园主入口进来，最先迎接您的往往是猴山。这里位于和燕路168号园内，是观察猕猴群居生活的好地方。看它们跳跃、理毛、争抢，热闹得像一座小山城。请记得不投喂、不逗弄，安静观看更精彩。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-2",
+      "name": "南京红山动物园-新狼馆",
+      "poetic": "狼影穿林，荒野入城",
+      "lng": 118.80281,
+      "lat": 32.092343,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "新狼馆：城市里的荒野秩序",
+          "bullets": [
+            "紧邻猴山片区，沿园内步道前行",
+            "模拟狼群栖息的林地环境",
+            "观察群体协作与等级秩序"
+          ],
+          "narration": "离开猴山，沿着园内步道很快就能到新狼馆。这里为狼群营造了接近野外的林地环境，位于和燕路168号红山森林动物园内。狼是高度社会化的动物，群体里有默契也有秩序。静静观察它们巡行、嗅闻与互动，能感受到荒野气息。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-3",
+      "name": "南京市红山森林动物园本土物种保育区",
+      "poetic": "金陵原野，乡土生灵",
+      "lng": 118.801986,
+      "lat": 32.091591,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "本土物种保育区：身边的自然故事",
+          "bullets": [
+            "展示江苏及长江中下游本土物种",
+            "强调保育、栖息地与生态教育",
+            "距离猴山约92米，适合慢行细看"
+          ],
+          "narration": "本土物种保育区是红山很有特色的一站，距离猴山约百米。这里集中展示江苏及长江中下游地区的本土动物，讲的是身边土地上的生命故事。它不只是看动物，更是在理解栖息地保护、城市与自然如何共存。请放慢脚步，读一读展牌。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-4",
+      "name": "细尾獴馆",
+      "poetic": "沙丘哨兵，直立望风",
+      "lng": 118.802446,
+      "lat": 32.090667,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "细尾獴馆：小小哨兵站岗记",
+          "bullets": [
+            "细尾獴成群活动，喜欢直立张望",
+            "可观察哨兵行为与挖掘习性",
+            "在本土物种保育区附近，人气很高"
+          ],
+          "narration": "细尾獴馆就在本土物种保育区附近，是红山的人气小站。细尾獴来自非洲，却凭一群小家伙的警觉和俏皮圈粉无数。它们常常后腿直立、四处张望，像一群训练有素的小哨兵。看它们轮流站岗、挖洞、嬉闹，特别治愈。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-5",
+      "name": "刺猬花园",
+      "poetic": "叶下微光，刺间温柔",
+      "lng": 118.80366,
+      "lat": 32.091136,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "刺猬花园：安静角落里的微小生命",
+          "bullets": [
+            "小型动物展区，环境安静",
+            "观察刺猬夜行与防御行为",
+            "轻声慢行，减少惊扰"
+          ],
+          "narration": "刺猬花园位于红山南路88号红山森林动物园内，是一处安静的小型动物展区。刺猬多在傍晚和夜间活动，遇到危险会蜷成刺球。观看时要轻声慢行，别敲玻璃或用手电直照。在这片花园里，微小的生命也值得温柔以待。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-6",
+      "name": "红山森林动物园-狮虎山",
+      "poetic": "山吼林震，王者巡疆",
+      "lng": 118.804632,
+      "lat": 32.092655,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "狮虎山：大型猫科的领地巡游",
+          "bullets": [
+            "狮、虎等大型猫科动物展区",
+            "观察领地巡视、休息与互动",
+            "不可投喂或拍打挑衅"
+          ],
+          "narration": "狮虎山是红山的经典展区，位于和燕路168号园内。这里生活着狮子、老虎等大型猫科动物，山坡、岩石和树荫构成了它们的领地。运气好时，能听到低沉吼声在林间回荡。请保持距离，不投喂、不拍打，让它们自在展示王者姿态。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-7",
+      "name": "红山森林动物园-南京熊猫馆",
+      "poetic": "黑白团子，竹林慢生活",
+      "lng": 118.801421,
+      "lat": 32.092887,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "南京熊猫馆：慢吞吞的国宝日常",
+          "bullets": [
+            "大熊猫室内外展区，位于园区西北角",
+            "观察采食竹子、休息与活动",
+            "保持安静，请勿投喂"
+          ],
+          "narration": "南京熊猫馆在红山森林动物园西北角，是很多游客最期待的一站。大熊猫的生活节奏很慢，吃竹子、打盹、翻身，每个动作都能引来欢呼。观察它们如何剥竹、选择竹叶，也是一堂生动的食性课。请勿投喂，安静观赏。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-8",
+      "name": "红山森林动物园-澳洲区",
+      "poetic": "南半球风，袋鼠跃原",
+      "lng": 118.805705,
+      "lat": 32.088713,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "澳洲区：把南半球草原搬进红山",
+          "bullets": [
+            "展示澳洲代表性动物",
+            "可观察袋鼠、鸸鹋等物种",
+            "位于园区东南角，适合亲子游览"
+          ],
+          "narration": "澳洲区位于红山森林动物园东南角，把南半球的草原气息带进南京。这里能看到袋鼠、鸸鹋等澳洲代表动物。袋鼠用强健后腿跳跃，尾巴像平衡杆。观察它们晒太阳、觅食和育幼，仿佛走进一片遥远的南方旷野。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-9",
+      "name": "红山森林动物园考拉馆",
+      "poetic": "",
+      "lng": 118.804402,
+      "lat": 32.090643,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "红山森林动物园考拉馆",
+          "bullets": [
+            "地址：红山街道红山街道和燕路168号红山动物园内"
+          ],
+          "narration": "这里是红山森林动物园考拉馆。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-10",
+      "name": "红山森林动物园两栖爬行馆",
+      "poetic": "",
+      "lng": 118.806307,
+      "lat": 32.090795,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "红山森林动物园两栖爬行馆",
+          "bullets": [
+            "地址：和燕路168号红山森林动物园内(东侧)"
+          ],
+          "narration": "这里是红山森林动物园两栖爬行馆。"
+        }
+      ]
+    },
+    {
+      "id": "spot-mvaxdqn7-11",
+      "name": "红山森林动物园-新虎园",
+      "poetic": "",
+      "lng": 118.804676,
+      "lat": 32.092655,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-2.jpg",
+      "imageCredit": "",
+      "slides": [
+        {
+          "title": "红山森林动物园-新虎园",
+          "bullets": [
+            "地址：和燕路168号红山森林动物园"
+          ],
+          "narration": "这里是红山森林动物园-新虎园。"
+        }
+      ]
+    }
+  ],
+  "coverImage": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-1.jpg",
+  "publishedAt": 1792158882642
+}

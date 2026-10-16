@@ -6,7 +6,7 @@
   type LngLat,
   type PublishedAttraction,
 } from './tourPackage'
-import { exportPackageViaServer } from './exportTarget'
+import { exportPackageViaServer, type MediaFile } from './exportTarget'
 import { loadPublishedAttraction } from './catalog'
 import type { DraftAttraction, Spot } from '../types/attraction'
 
@@ -192,46 +192,64 @@ function extFromMimeOrRef(ref: string, mime?: string): string {
   return '.jpg'
 }
 
-/** 把草稿中的图片引用变成 data URL（支持 data: / http(s) / 站点相对路径） */
-async function toDataUrl(ref: string): Promise<{ dataUrl: string; ext: string }> {
+/** 图片引用 → Blob（支持 data: / http(s) / 站点相对路径） */
+async function toBlob(ref: string): Promise<Blob> {
   if (!ref) throw new Error('空图片引用')
   if (ref.startsWith('data:')) {
-    return { dataUrl: ref, ext: extFromMimeOrRef(ref) }
+    const decoded = await fetch(ref)
+    if (!decoded.ok) throw new Error('图片解码失败')
+    return decoded.blob()
   }
-
   const url = /^https?:\/\//i.test(ref) ? ref : new URL(ref, window.location.origin).href
   const res = await fetch(url)
   if (!res.ok) throw new Error(`图片读取失败: ${ref} (${res.status})`)
-  const blob = await res.blob()
-  const dataUrl = await new Promise<string>((resolve, reject) => {
+  return res.blob()
+}
+
+function sameBytes(a: ArrayBuffer, b: ArrayBuffer): boolean {
+  if (a.byteLength !== b.byteLength) return false
+  const va = new Uint8Array(a)
+  const vb = new Uint8Array(b)
+  for (let i = 0; i < va.length; i++) {
+    if (va[i] !== vb[i]) return false
+  }
+  return true
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result || ''))
-    reader.onerror = () => reject(new Error(`图片编码失败: ${ref}`))
+    reader.onerror = () => reject(new Error('图片编码失败'))
     reader.readAsDataURL(blob)
   })
-  return { dataUrl, ext: extFromMimeOrRef(ref, blob.type) }
 }
 
 /**
- * 将草稿图片收拢进 assets，并把 image/coverImage 改写成 assets/... 键
- * 这样发布包自带图片，不依赖展示端事先有 /spots 文件
+ * 草稿图片 → /spots/<id>/<节点>.<ext> 路径，图片本体另行落盘
+ * 同一张图（按字节比较）只留一份引用，避免包内重复
  */
-export async function materializeMedia(draft: DraftAttraction): Promise<{
+export async function prepareMedia(draft: DraftAttraction): Promise<{
   spots: Spot[]
   coverImage: string
-  assets: Record<string, string>
+  media: MediaFile[]
 }> {
-  const assets: Record<string, string> = {}
-  const dataUrlToKey = new Map<string, string>()
+  const media: MediaFile[] = []
+  const seen: { sig: string; buffer: ArrayBuffer; publicPath: string }[] = []
 
   const put = async (logicalName: string, ref: string): Promise<string> => {
-    const { dataUrl, ext } = await toDataUrl(ref)
-    const existing = dataUrlToKey.get(dataUrl)
-    if (existing) return existing
-    const key = `assets/${draft.id}/${logicalName}${ext}`
-    assets[key] = dataUrl
-    dataUrlToKey.set(dataUrl, key)
-    return key
+    const blob = await toBlob(ref)
+    const buffer = await blob.arrayBuffer()
+    const sig = `${blob.type}:${buffer.byteLength}`
+
+    const dup = seen.find((c) => c.sig === sig && sameBytes(c.buffer, buffer))
+    if (dup) return dup.publicPath
+
+    const relPath = `${draft.id}/${logicalName}${extFromMimeOrRef(ref, blob.type)}`
+    const publicPath = `/spots/${relPath}`
+    seen.push({ sig, buffer, publicPath })
+    media.push({ relPath, publicPath, blob })
+    return publicPath
   }
 
   const spots: Spot[] = []
@@ -241,20 +259,43 @@ export async function materializeMedia(draft: DraftAttraction): Promise<{
   }
 
   const coverRef = draft.coverImage || spots[0]?.image || '/spots/map-intro.jpg'
-  // coverRef 若已是 assets 键，直接复用；否则按原引用读取
-  const coverImage = coverRef.startsWith('assets/')
-    ? coverRef
-    : await put('cover', coverRef)
+  // 封面若与某个节点同图，复用同一路径
+  const coverImage = spots.some((s) => s.image === coverRef) ? coverRef : await put('cover', coverRef)
 
-  return { spots, coverImage, assets }
+  return { spots, coverImage, media }
 }
 
-/** 草稿 → 展示端契约发布包（含 assets 图片） */
-export async function toPublishedPackage(draft: DraftAttraction): Promise<PublishedAttraction> {
+/** 草稿 → 展示端契约发布包（图片为 /spots/... 路径引用，二进制由 media 落盘） */
+export async function toPublishedPackage(draft: DraftAttraction): Promise<{
+  pkg: PublishedAttraction
+  media: MediaFile[]
+}> {
   const first = draft.spots[0]
   if (!first) throw new Error('没有节点，无法发布')
-  const media = await materializeMedia(draft)
-  const spots = media.spots.map(({ searchHint: _hint, ...rest }) => rest)
+  const prepared = await prepareMedia(draft)
+  return {
+    pkg: {
+      schemaVersion: CONTRACT_SCHEMA_VERSION,
+      id: draft.id,
+      name: draft.name,
+      description: draft.description,
+      start: draft.start,
+      zoom: draft.zoom || DEFAULT_MAP_ZOOM,
+      spots: prepared.spots.map(({ searchHint: _hint, ...rest }) => rest),
+      coverImage: prepared.coverImage,
+      publishedAt: Date.now(),
+    },
+    media: prepared.media,
+  }
+}
+
+/** 开发服务不可用时的兜底：把同一批图片内嵌为 data URL，产出单文件包 */
+export async function toSelfContainedPackage(draft: DraftAttraction): Promise<PublishedAttraction> {
+  const prepared = await prepareMedia(draft)
+  const assets: Record<string, string> = {}
+  for (const item of prepared.media) {
+    assets[item.publicPath] = await blobToDataUrl(item.blob)
+  }
   return {
     schemaVersion: CONTRACT_SCHEMA_VERSION,
     id: draft.id,
@@ -262,10 +303,10 @@ export async function toPublishedPackage(draft: DraftAttraction): Promise<Publis
     description: draft.description,
     start: draft.start,
     zoom: draft.zoom || DEFAULT_MAP_ZOOM,
-    spots,
-    coverImage: media.coverImage,
+    spots: prepared.spots.map(({ searchHint: _hint, ...rest }) => rest),
+    coverImage: prepared.coverImage,
     publishedAt: Date.now(),
-    assets: media.assets,
+    assets,
   }
 }
 
@@ -288,8 +329,8 @@ function downloadJson(filename: string, data: unknown) {
 }
 
 /**
- * 发布：打包图片后写入本应用 public/spots（与前台同一数据源）
- * 开发服务不可用时回落为浏览器下载
+ * 发布：图片落成文件、包体写入本应用 public/spots（与前台同一数据源）
+ * 开发服务不可用时回落为浏览器下载（图片内嵌的离线包）
  */
 export async function publishDraft(
   id: string,
@@ -309,10 +350,10 @@ export async function publishDraft(
     zoom: typeof opts?.zoom === 'number' && opts.zoom > 0 ? opts.zoom : item.zoom || DEFAULT_MAP_ZOOM,
     coverImage: item.coverImage || item.spots[0].image,
   })
-  const pkg = await toPublishedPackage(draft)
+  const { pkg, media } = await toPublishedPackage(draft)
 
   try {
-    const written = await exportPackageViaServer(pkg)
+    const written = await exportPackageViaServer(pkg, media)
     return {
       draft,
       pkg,
@@ -320,9 +361,10 @@ export async function publishDraft(
       targetLabel: `${written.absolutePath}\\${written.attractionPath}`,
     }
   } catch {
-    downloadJson(`${pkg.id}.json`, pkg)
+    const local = await toSelfContainedPackage(draft)
+    downloadJson(`${local.id}.json`, local)
     await new Promise((r) => setTimeout(r, 120))
-    downloadJson('catalog.json', buildCatalog([pkg]))
-    return { draft, pkg, mode: 'download' }
+    downloadJson('catalog.json', buildCatalog([local]))
+    return { draft, pkg: local, mode: 'download' }
   }
 }
