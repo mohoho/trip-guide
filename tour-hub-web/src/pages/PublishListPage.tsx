@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { SiteFooter } from '../components/SiteFooter'
+import { SiteHeader } from '../components/SiteHeader'
 import { loadCatalog } from '../lib/catalog'
 import { createDraft, deleteDraft, listLocalDrafts } from '../lib/draftStore'
 import type { CatalogItem } from '../lib/tourPackage'
@@ -85,29 +87,15 @@ export function PublishListPage() {
   const featured = rows[0] || null
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa] text-[#111827]">
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-5 sm:px-8 h-14 bg-white/90 backdrop-blur border-b border-black/5">
-        <div className="flex items-center gap-3 min-w-0">
-          <Link to="/" className="text-sm text-[#6b7280] hover:text-[#111827] shrink-0">
-            前台
-          </Link>
-          <span className="text-[#d1d5db]">/</span>
-          <div className="min-w-0">
-            <h1 className="text-[15px] font-medium truncate">发布后台</h1>
-            <p className="text-xs text-[#9ca3af]">与前台共用 public/spots</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#3b82f6] text-white px-3.5 py-1.5 text-sm hover:bg-[#2563eb]"
-        >
-          <Plus size={15} />
-          新建景点
-        </button>
-      </header>
+    <div className="flex min-h-screen flex-col bg-[#f7f8fa] text-[#111827]">
+      <SiteHeader back={{ label: '返回前台', to: '/' }} cta={{ label: '新建景点', onClick: onCreate }} />
 
-      <main className="mx-auto max-w-5xl px-5 sm:px-8 py-6 sm:py-8 space-y-6">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-5 sm:px-8 py-6 sm:py-8 space-y-6">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-medium tracking-tight">景点管理</h2>
+          <span className="rounded-md bg-[#eef2ff] px-1.5 py-0.5 text-[11px] text-[#4f46e5]">发布后台</span>
+        </div>
+
         {error && rows.length === 0 ? (
           <div className="rounded-2xl border border-red-100 bg-white px-6 py-8 text-sm text-red-600">{error}</div>
         ) : null}
@@ -206,6 +194,8 @@ export function PublishListPage() {
           </div>
         )}
       </main>
+
+      <SiteFooter />
     </div>
   )
 }

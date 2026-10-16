@@ -1,6 +1,8 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
+import { SiteFooter } from '../components/SiteFooter'
+import { SiteHeader } from '../components/SiteHeader'
 import type { CatalogItem } from '../lib/tourPackage'
 import { loadCatalog } from '../lib/catalog'
 
@@ -17,21 +19,15 @@ export function HomePage() {
   const featured = list[0] || null
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa] text-[#111827]">
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-5 sm:px-8 h-14 bg-white/90 backdrop-blur border-b border-black/5">
-        <div className="min-w-0">
-          <h1 className="text-[15px] font-medium truncate">程导览</h1>
-          <p className="text-xs text-[#9ca3af]">选择景点开始导览</p>
-        </div>
-        <Link
-          to="/publish"
-          className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm hover:bg-[#f3f4f6]"
-        >
-          发布后台
-        </Link>
-      </header>
+    <div className="flex min-h-screen flex-col bg-[#f7f8fa] text-[#111827]">
+      <SiteHeader cta={{ label: '发布后台', to: '/publish' }} />
 
-      <main className="mx-auto max-w-5xl px-5 sm:px-8 py-6 sm:py-8 space-y-6">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-5 sm:px-8 py-6 sm:py-8 space-y-6">
+        <div>
+          <h2 className="text-lg font-medium tracking-tight">选择景点开始导览</h2>
+          <p className="mt-1 text-sm text-[#6b7280]">点击进入沉浸式地图导览，边走边听讲解</p>
+        </div>
+
         {error ? (
           <div className="rounded-2xl border border-red-100 bg-white px-6 py-8 text-sm text-red-600">{error}</div>
         ) : list.length === 0 ? (
@@ -98,6 +94,8 @@ export function HomePage() {
           </>
         )}
       </main>
+
+      <SiteFooter />
     </div>
   )
 }
