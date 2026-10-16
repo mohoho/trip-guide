@@ -7,7 +7,7 @@ export type ServerExportResult = {
   catalogPath: string
 }
 
-/** 写入本应用 public/data（与前台同一数据源） */
+/** 写入本应用 public/spots（与前台同一数据源） */
 export async function exportPackageViaServer(
   pkg: PublishedAttraction,
 ): Promise<ServerExportResult> {

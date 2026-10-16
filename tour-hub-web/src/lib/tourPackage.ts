@@ -39,7 +39,6 @@ export interface PublishedAttraction {
   coverImage: string
   publishedAt: number
   assets?: Record<string, string>
-  routes?: Record<string, LngLat[]>
 }
 
 export interface CatalogItem {

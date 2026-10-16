@@ -10,7 +10,7 @@
 |---|---|
 | 前台选景点 | 浏览已发布景点，进入导览 |
 | 实地导览 | 高德地图、步行路线、节点讲解、可选 AI 问答 |
-| 发布后台 | 确定旅游范围 → AI+高德生成节点 → 改文案/传图/拖标记 → 一键写入 `public/data` |
+| 发布后台 | 确定旅游范围 → AI+高德生成节点 → 改文案/传图/拖标记 → 一键写入 `public/spots` |
 
 ![发布后台](docs/screenshots/publish.png)
 
@@ -45,12 +45,13 @@ npm run dev
 已发布内容存放在：
 
 ```
-tour-hub-web/public/data/catalog.json
-tour-hub-web/public/data/attractions/{id}.json
+tour-hub-web/public/spots/catalog.json
+tour-hub-web/public/spots/{id}.json
 ```
 
 外部 AI 生产内容请遵循：`.cursor/skills/trip-guide-content/SKILL.md`  
-设计说明：`docs/design.md`
+设计说明：`docs/design.md`  
+高德检索说明：`docs/amap-search.md`
 
 ## 仓库结构
 

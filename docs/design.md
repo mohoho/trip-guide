@@ -1,13 +1,13 @@
 # 程导览 设计文档
 
-> 品牌「程导览」· 工程名 `trip-guide` · 前后台共用 `public/data`
+> 品牌「程导览」· 工程名 `trip-guide` · 前后台共用 `public/spots`
 
 ## 仓库
 
 ```
 trip-guide/
 ├── tour-hub-web/                        # 统一应用（包名 trip-guide）
-│   ├── public/data/                     # 唯一已发布数据源
+│   ├── public/spots/                    # 唯一已发布数据源（catalog + 各景点文件）
 │   └── src/lib/tourPackage.ts
 ├── .cursor/skills/trip-guide-content/   # 外部 AI 生产导览包
 ├── docs/screenshots/                    # README 展示截图
@@ -18,10 +18,10 @@ trip-guide/
 
 | 用途 | 来源 |
 |---|---|
-| 前台列表 / 导览 | `public/data/catalog.json` + `attractions/*.json` |
+| 前台列表 / 导览 | `public/spots/catalog.json` + `{id}.json` |
 | 发布后台列表 | **同一 catalog**；另附尚未发布的本地草稿 |
 | 编辑中草稿 | `localStorage`（`trip-guide:drafts:v1`） |
-| 点「发布」 | 写入本应用 `public/data/` |
+| 点「发布」 | 写入本应用 `public/spots/` |
 
 ## 发布流程
 

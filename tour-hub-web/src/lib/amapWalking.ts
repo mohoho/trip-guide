@@ -1,4 +1,4 @@
-import type { LngLat } from './routeCache'
+import type { LngLat } from './tourPackage'
 
 type PathPt = {
   getLng?: () => number

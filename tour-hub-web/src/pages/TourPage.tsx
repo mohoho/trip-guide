@@ -15,14 +15,17 @@ import { TourAutoGate } from '../components/TourAutoGate'
 import { TourProgressBar } from '../components/TourProgressBar'
 import { useTourAutoMode } from '../hooks/useTourAutoMode'
 import { estimateSpeechMs, type TourPhase } from '../lib/autoTour'
-import { getCachedRoute, hydrateRouteCache, ingestRoutes, setCachedRoute, type LngLat } from '../lib/routeCache'
 import { loadPublishedAttraction } from '../lib/catalog'
-import { resolveMediaUrl, type PublishedAttraction, type PublishedSpot } from '../lib/tourPackage'
+import { resolveMediaUrl, type LngLat, type PublishedAttraction, type PublishedSpot } from '../lib/tourPackage'
 
 type TourNode = PublishedSpot
 
 const TRIGGER_METERS = 38
 const SPEECH_TRAIL_MS = 200
+/** 移动速度：3 倍速（基准 1.6 米/秒 × 3），单跳时长上下限同步压到 1/3 */
+const WALK_METERS_PER_SEC = 4.8
+const WALK_MIN_MS = 200
+const WALK_MAX_MS = 2667
 /** 景点加载前的占位；真实起点以发布包 start 为准 */
 const PLACEHOLDER_POS: LngLat = { lng: 0, lat: 0 }
 
@@ -77,7 +80,6 @@ export function TourPage() {
   const [answer, setAnswer] = useState('')
   const [asking, setAsking] = useState(false)
   const [mapReady, setMapReady] = useState(false)
-  const [routeCacheReady, setRouteCacheReady] = useState(false)
   const [tourStart, setTourStart] = useState<LngLat>(PLACEHOLDER_POS)
   const [tourZoom, setTourZoom] = useState(18.5)
   const [routePath, setRoutePath] = useState<LngLat[] | null>(null)
@@ -142,17 +144,14 @@ export function TourPage() {
     let cancelled = false
     void (async () => {
       try {
-        await hydrateRouteCache()
-        if (cancelled) return
         const item = await loadPublishedAttraction(id)
-        if (item.routes) ingestRoutes(item.routes)
+        if (cancelled) return
         setAttraction(item)
         setNodes(item.spots)
         const origin = item.start
         setTourStart(origin)
         setTourZoom(item.zoom || 18.5)
         charRef.current = origin
-        setRouteCacheReady(true)
       } catch (e) {
         if (cancelled) return
         setSpotsError(e instanceof Error ? e.message : '景点加载失败')
@@ -249,7 +248,10 @@ export function TourPage() {
       return
     }
 
-    const duration = Math.min(8000, Math.max(600, (total / 1.6) * 1000))
+    const duration = Math.min(
+      WALK_MAX_MS,
+      Math.max(WALK_MIN_MS, (total / WALK_METERS_PER_SEC) * 1000),
+    )
     const startAt = performance.now()
     setMoving(true)
     let lastProximity = 0
@@ -299,17 +301,6 @@ export function TourPage() {
       return
     }
 
-    const cached = getCachedRoute(from, to)
-    if (cached) {
-      const path = [...cached]
-      const first = path[0]
-      if (haversineMeters(from, first) > 3) path.unshift(from)
-      const last = path[path.length - 1]
-      if (haversineMeters(last, to) > 3) path.push(to)
-      run(path)
-      return
-    }
-
     const search = walkingSearchRef.current
     if (!search) {
       run([from, to])
@@ -325,7 +316,6 @@ export function TourPage() {
         if (haversineMeters(from, first) > 3) path.unshift(from)
         const last = path[path.length - 1]
         if (haversineMeters(last, to) > 3) path.push(to)
-        setCachedRoute(from, to, path)
         run(path)
         return
       }
@@ -725,7 +715,7 @@ export function TourPage() {
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-black/5">
                 <span className="text-sm font-medium">讲解</span>
                 <span className="text-[11px] text-[#9ca3af]">
-                  {routeCacheReady ? '路网已就绪' : '载入路线…'}
+                  {mapReady ? '路网已就绪' : '载入地图…'}
                 </span>
               </div>
 

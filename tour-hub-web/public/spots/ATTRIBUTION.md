@@ -1,6 +1,8 @@
 # 景点实景图来源
 
-豫园节点配图来自 Wikimedia Commons，仅供黑客松演示。
+实景图来自 Wikimedia Commons，仅供黑客松演示。图片按景点分目录存放：`public/spots/{id}/`。
+
+## `spots/yuyuan/`（豫园）
 
 | 文件 | 来源 |
 |---|---|
@@ -9,4 +11,9 @@
 | `yu-ling-long.jpg` | 玉玲珑 |
 | `dian-chun-tang.jpg` | 点春堂 |
 | `jiu-qu-qiao.jpg` | 九曲桥 |
-| `map-intro.jpg` | 豫园空态/封面占位 |
+
+## 目录级通用
+
+| 文件 | 来源 |
+|---|---|
+| `map-intro.jpg` | 空态 / 封面占位图（各景点通用默认图） |

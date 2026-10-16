@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import type { Plugin, Connect } from 'vite'
 
-const DATA_DIR = './public/data'
+const DATA_DIR = './public/spots'
 
 function resolveDataDir(root: string) {
   return path.resolve(root, DATA_DIR)
@@ -78,7 +78,7 @@ function readBody(req: Connect.IncomingMessage): Promise<string> {
   })
 }
 
-/** 开发态：发布写入本应用 public/data */
+/** 开发态：发布写入本应用 public/spots */
 export function exportToDisplayPlugin(): Plugin {
   let root = process.cwd()
 
@@ -106,8 +106,7 @@ export function exportToDisplayPlugin(): Plugin {
             return
           }
 
-          fs.mkdirSync(path.join(absoluteDataDir, 'attractions'), { recursive: true })
-          writeJson(path.join(absoluteDataDir, 'attractions', `${pkg.id}.json`), pkg)
+          writeJson(path.join(absoluteDataDir, `${pkg.id}.json`), pkg)
 
           const catalogFile = path.join(absoluteDataDir, 'catalog.json')
           const catalog = mergeCatalog(readJson<Catalog>(catalogFile), pkg)
@@ -118,7 +117,7 @@ export function exportToDisplayPlugin(): Plugin {
             JSON.stringify({
               ok: true,
               absolutePath: absoluteDataDir,
-              attractionPath: path.join('attractions', `${pkg.id}.json`),
+              attractionPath: `${pkg.id}.json`,
               catalogPath: 'catalog.json',
             }),
           )

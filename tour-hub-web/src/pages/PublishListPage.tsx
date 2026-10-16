@@ -40,7 +40,7 @@ function catalogToRow(c: CatalogItem): ListRow {
   }
 }
 
-/** 与前台同一数据源 public/data；本地未发布草稿附加在后 */
+/** 与前台同一数据源 public/spots；本地未发布草稿附加在后 */
 function mergeRows(catalog: CatalogItem[], drafts: DraftAttraction[]): ListRow[] {
   const publishedIds = new Set(catalog.map((c) => c.id))
   const rows = catalog.map(catalogToRow)
@@ -94,7 +94,7 @@ export function PublishListPage() {
           <span className="text-[#d1d5db]">/</span>
           <div className="min-w-0">
             <h1 className="text-[15px] font-medium truncate">发布后台</h1>
-            <p className="text-xs text-[#9ca3af]">与前台共用 public/data</p>
+            <p className="text-xs text-[#9ca3af]">与前台共用 public/spots</p>
           </div>
         </div>
         <button

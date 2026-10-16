@@ -31,6 +31,7 @@ function normalizeDraft(raw: DraftAttraction): DraftAttraction {
     spots,
     city: typeof raw.city === 'string' ? raw.city : '',
     amapContext: typeof raw.amapContext === 'string' ? raw.amapContext : '',
+    candidates: Array.isArray(raw.candidates) ? raw.candidates : [],
     zoom: typeof raw.zoom === 'number' && raw.zoom > 0 ? raw.zoom : DEFAULT_MAP_ZOOM,
     start: hasStart ? raw.start : startFromFirstSpot(spots, raw.start),
   }
@@ -51,7 +52,7 @@ function writeAll(list: DraftAttraction[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
 }
 
-/** 仅本地未发布/编辑中的草稿（与 public/data 分离） */
+/** 仅本地未发布/编辑中的草稿（与 public/spots 分离） */
 export function listLocalDrafts(): DraftAttraction[] {
   return readAll().sort((a, b) => b.updatedAt - a.updatedAt)
 }
@@ -79,7 +80,7 @@ export function publishedToDraft(pkg: PublishedAttraction): DraftAttraction {
   }
 }
 
-/** 编辑器用：本地草稿优先，否则从 public/data 发布包载入 */
+/** 编辑器用：本地草稿优先，否则从 public/spots 发布包载入 */
 export async function ensureEditableDraft(id: string): Promise<DraftAttraction | null> {
   const local = getDraft(id)
   if (local) return local
@@ -147,6 +148,32 @@ export function newSpotAt(pos: LngLat, index: number): Spot {
         title: `节点 ${n}`,
         bullets: ['待完善讲解要点'],
         narration: `这里是第 ${n} 站。`,
+      },
+    ],
+  }
+}
+
+/** 从高德候选地点生成导览节点（坐标已确定，讲解文案待补） */
+export function newSpotFromCandidate(
+  poi: { name: string; location: LngLat; address?: string },
+  index: number,
+): Spot {
+  const n = index + 1
+  return {
+    id: `spot-${Date.now().toString(36)}-${n}`,
+    name: poi.name,
+    poetic: '',
+    lng: poi.location.lng,
+    lat: poi.location.lat,
+    triggerRadiusMeters: 38,
+    image: '/spots/map-intro.jpg',
+    imageCredit: '',
+    searchHint: poi.name,
+    slides: [
+      {
+        title: poi.name,
+        bullets: [poi.address ? `地址：${poi.address}` : '待完善讲解要点'],
+        narration: `这里是${poi.name}。`,
       },
     ],
   }
@@ -223,10 +250,7 @@ export async function materializeMedia(draft: DraftAttraction): Promise<{
 }
 
 /** 草稿 → 展示端契约发布包（含 assets 图片） */
-export async function toPublishedPackage(
-  draft: DraftAttraction,
-  routes?: PublishedAttraction['routes'],
-): Promise<PublishedAttraction> {
+export async function toPublishedPackage(draft: DraftAttraction): Promise<PublishedAttraction> {
   const first = draft.spots[0]
   if (!first) throw new Error('没有节点，无法发布')
   const media = await materializeMedia(draft)
@@ -242,7 +266,6 @@ export async function toPublishedPackage(
     coverImage: media.coverImage,
     publishedAt: Date.now(),
     assets: media.assets,
-    ...(routes && Object.keys(routes).length > 0 ? { routes } : {}),
   }
 }
 
@@ -265,7 +288,7 @@ function downloadJson(filename: string, data: unknown) {
 }
 
 /**
- * 发布：打包图片后写入本应用 public/data（与前台同一数据源）
+ * 发布：打包图片后写入本应用 public/spots（与前台同一数据源）
  * 开发服务不可用时回落为浏览器下载
  */
 export async function publishDraft(

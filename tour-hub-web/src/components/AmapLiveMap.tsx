@@ -1,8 +1,7 @@
 ﻿import { useEffect, useRef } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
-import type { PublishedSpot } from '../lib/tourPackage'
 import { extractWalkingPath } from '../lib/amapWalking'
-import type { LngLat } from '../lib/routeCache'
+import type { LngLat, PublishedSpot } from '../lib/tourPackage'
 
 export type WalkingSearch = (from: LngLat, to: LngLat) => Promise<LngLat[] | null>
 

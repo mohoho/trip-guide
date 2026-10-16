@@ -2,9 +2,9 @@
 name: trip-guide-content
 description: >-
   Produces 程导览 (trip-guide) published attraction packages (catalog.json and
-  attractions/{id}.json) with spots, slides, narration, coordinates, and optional
+  {id}.json) with spots, slides, narration, coordinates, and optional
   assets. Use when generating or editing 程导览 导览内容, 发布包, PublishedAttraction,
-  catalog, or when an external AI should output content for tour-hub-web/public/data.
+  catalog, or when an external AI should output content for tour-hub-web/public/spots.
 ---
 
 # 程导览内容生产
@@ -12,8 +12,8 @@ description: >-
 为「程导览」应用（`tour-hub-web`，包名 `trip-guide`）生产可直接投放的导览 JSON。应用读取：
 
 ```
-tour-hub-web/public/data/catalog.json
-tour-hub-web/public/data/attractions/{id}.json
+tour-hub-web/public/spots/catalog.json
+tour-hub-web/public/spots/{id}.json
 ```
 
 运行时类型在 `tour-hub-web/src/lib/tourPackage.ts`。
@@ -22,7 +22,7 @@ tour-hub-web/public/data/attractions/{id}.json
 
 1. 向用户确认景点名称、城市、节点数量（默认 4–6）
 2. 生成 `PublishedAttraction`（`schemaVersion: 1`）
-3. 写入 `tour-hub-web/public/data/attractions/{id}.json`
+3. 写入 `tour-hub-web/public/spots/{id}.json`
 4. 更新 `catalog.json`：按 `id` upsert 目录项（封面用可直接展示的 URL 或 data URL）
 5. 坐标未知时：写合理 `searchHint` 式地名到节点名/副标题，并把 `lng/lat` 标为待校准占位（景区中心附近小偏移）；提醒用户在 `/publish/:id` 地图阶段微调
 
@@ -31,7 +31,7 @@ tour-hub-web/public/data/attractions/{id}.json
 | 文件 | 类型 |
 |---|---|
 | `catalog.json` | `AttractionCatalog` |
-| `attractions/{id}.json` | `PublishedAttraction` |
+| `{id}.json` | `PublishedAttraction`（每个景点一个文件） |
 
 ## PublishedAttraction（必填）
 
@@ -43,11 +43,10 @@ tour-hub-web/public/data/attractions/{id}.json
   "description": "一句话简介",
   "start": { "lng": 121.49185, "lat": 31.22732 },
   "zoom": 17.5,
-  "coverImage": "/spots/san-sui-tang.jpg",
+  "coverImage": "/spots/yuyuan/san-sui-tang.jpg",
   "publishedAt": 1710000000000,
   "spots": [],
-  "assets": {},
-  "routes": {}
+  "assets": {}
 }
 ```
 
@@ -57,7 +56,7 @@ tour-hub-web/public/data/attractions/{id}.json
 - `name` / `poetic`
 - `lng` / `lat`：WGS84 近似即可，发布页可再拖
 - `triggerRadiusMeters`：默认 `38`
-- `image`：`assets/...` 键、data URL、https、或站点相对路径如 `/spots/xxx.jpg`
+- `image`：`assets/...` 键、data URL、https、或站点相对路径如 `/spots/{id}/xxx.jpg`
 - `imageCredit`
 - `slides[]`：至少 1 页；`title`、`bullets`（2–5 条）、`narration`（80–150 字口语）
 
@@ -82,7 +81,7 @@ tour-hub-web/public/data/attractions/{id}.json
       "id": "yuyuan",
       "name": "豫园",
       "description": "…",
-      "coverImage": "/spots/san-sui-tang.jpg",
+      "coverImage": "/spots/yuyuan/san-sui-tang.jpg",
       "publishedAt": 1710000000000
     }
   ]

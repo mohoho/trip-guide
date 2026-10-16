@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "id": "yuyuan",
+  "name": "豫园",
+  "description": "上海著名江南古典园林，明代潘允端为父颐养所建，园中亭台假山、玉玲珑与九曲桥闻名。",
+  "start": {
+    "lng": 121.49185,
+    "lat": 31.22732
+  },
+  "zoom": 18.5,
+  "spots": [
+    {
+      "id": "san-sui-tang",
+      "name": "三穗堂",
+      "poetic": "一麦三穗 · 迎客之始",
+      "lng": 121.49185,
+      "lat": 31.22732,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/yuyuan/san-sui-tang.jpg",
+      "imageCredit": "Wikimedia Commons",
+      "slides": [
+        {
+          "title": "三穗堂 · 豫园正门大厅",
+          "bullets": [
+            "始建于清乾隆年间，是豫园的正门大厅。",
+            "“三穗”取自“一麦三穗”的吉祥典故。",
+            "官员与宾客入园时，首先在此停留、歇脚。"
+          ],
+          "narration": "欢迎来到豫园。我们现在所在的位置是三穗堂，豫园的正门大厅。三穗，寓意一麦三穗，象征丰收与吉祥。"
+        }
+      ]
+    },
+    {
+      "id": "da-jia-shan",
+      "name": "大假山",
+      "poetic": "武康黄石 · 堆叠如峰",
+      "lng": 121.49205,
+      "lat": 31.22755,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/yuyuan/da-jia-shan.jpg",
+      "imageCredit": "Wikimedia Commons",
+      "slides": [
+        {
+          "title": "大假山 · 武康黄石堆叠",
+          "bullets": [
+            "由明代著名叠山家张南阳设计建造。",
+            "选用武康黄石，堆叠出峰峦洞壑之势。",
+            "是江南园林假山艺术的代表之作。"
+          ],
+          "narration": "眼前这座大假山，出自明代叠山名家张南阳之手。武康黄石层层堆叠，洞壑相通，是豫园最具气势的一景。"
+        }
+      ]
+    },
+    {
+      "id": "yu-ling-long",
+      "name": "玉玲珑",
+      "poetic": "漏透皱瘦 · 镇园之宝",
+      "lng": 121.49252,
+      "lat": 31.22708,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/yuyuan/yu-ling-long.jpg",
+      "imageCredit": "Wikimedia Commons",
+      "slides": [
+        {
+          "title": "玉玲珑 · 镇园之宝",
+          "bullets": [
+            "上海著名的太湖石，有“漏、透、皱、瘦”之美。",
+            "相传为宋代花石纲遗物。",
+            "石身多孔，浇水可从各孔喷出，如烟如雾。"
+          ],
+          "narration": "这便是玉玲珑，豫园的镇园之宝。太湖石讲究漏、透、皱、瘦，玉玲珑四美俱全，相传与花石纲有关。"
+        }
+      ]
+    },
+    {
+      "id": "dian-chun-tang",
+      "name": "点春堂",
+      "poetic": "翠点春妍 · 风云旧迹",
+      "lng": 121.49238,
+      "lat": 31.22768,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/yuyuan/dian-chun-tang.jpg",
+      "imageCredit": "Wikimedia Commons",
+      "slides": [
+        {
+          "title": "点春堂 · 翠点春妍",
+          "bullets": [
+            "小刀会起义时曾作为指挥部。",
+            "堂名取自“翠点春妍”，寓意春意盎然。",
+            "陈列相关历史文物与介绍。"
+          ],
+          "narration": "点春堂，取意翠点春妍。晚清小刀会起义时，这里曾作为指挥部，是豫园中承载近代风云的一处景点。"
+        }
+      ]
+    },
+    {
+      "id": "jiu-qu-qiao",
+      "name": "九曲桥",
+      "poetic": "九九归一 · 步移景异",
+      "lng": 121.4929,
+      "lat": 31.22658,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/yuyuan/jiu-qu-qiao.jpg",
+      "imageCredit": "Wikimedia Commons",
+      "slides": [
+        {
+          "title": "九曲桥 · 湖心亭茶楼的九曲雅韵",
+          "bullets": [
+            "桥身九曲，寓意“九九归一”。",
+            "连接湖岸与湖心亭茶楼。",
+            "漫步桥上，每一步都能换一个角度看景。"
+          ],
+          "narration": "脚下是九曲桥，桥身蜿蜒九折，寓意九九归一。它通向湖心亭茶楼，行走其间，步移景异，是豫园最富诗意的画面之一。"
+        }
+      ]
+    }
+  ],
+  "coverImage": "/spots/yuyuan/san-sui-tang.jpg",
+  "publishedAt": 1790749091038
+}
