@@ -91,6 +91,8 @@ export function TourPage() {
   const charRef = useRef<LngLat>(PLACEHOLDER_POS)
   const nodesRef = useRef<TourNode[]>([])
   const routeSeqRef = useRef(0)
+  // 手动模式下显式点击选中的节点：行进途中路过其它节点不得抢占讲解
+  const explicitTargetRef = useRef<string | null>(null)
   const onArriveRef = useRef<(() => void) | null>(null)
   const synthRef = useRef(window.speechSynthesis)
   const speechFallbackRef = useRef<number | null>(null)
@@ -178,6 +180,7 @@ export function TourPage() {
       animRef.current = null
     }
     onArriveRef.current = null
+    explicitTargetRef.current = null
     setMoving(false)
     setRoutePath(null)
   }
@@ -192,7 +195,9 @@ export function TourPage() {
 
   const checkProximity = (pos: LngLat) => {
     if (modeRef.current === 'auto') return
+    const target = explicitTargetRef.current
     const nearest = nodesRef.current.reduce<{ node: TourNode; dist: number } | null>((best, node) => {
+      if (target && node.id !== target) return best
       const dist = haversineMeters(pos, { lng: node.lng, lat: node.lat })
       if (dist > TRIGGER_METERS) return best
       if (!best || dist < best.dist) return { node, dist }
@@ -204,7 +209,7 @@ export function TourPage() {
       setActiveNodeId(nearest.node.id)
       setSlideIndex(0)
       setPanelOpen(true)
-    } else if (!nearest && current) {
+    } else if (!nearest && current && !target) {
       setActiveNodeId(null)
       setSlideIndex(0)
       synthRef.current.cancel()
@@ -221,6 +226,7 @@ export function TourPage() {
       setMoving(false)
       animRef.current = null
       checkProximity(pos)
+      explicitTargetRef.current = null
       const cb = onArriveRef.current
       onArriveRef.current = null
       cb?.()
@@ -458,6 +464,7 @@ export function TourPage() {
       if (idx >= 0) walkToChapter(idx)
       return
     }
+    explicitTargetRef.current = node.id
     setActiveNodeId(node.id)
     setSlideIndex(0)
     setPanelOpen(true)
@@ -465,6 +472,7 @@ export function TourPage() {
   }
 
   const onMapClick = (pos: LngLat) => {
+    explicitTargetRef.current = null
     if (isAuto) {
       exitAutoToManual()
       routeTo(pos)
