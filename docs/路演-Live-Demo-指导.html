@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>程导览 · 路演指导（7 分钟 Live Demo + 5 分钟评委问答）</title>
+<style>
+  :root{
+    --ink:#111827; --ink2:#374151; --muted:#6b7280; --faint:#9ca3af;
+    --line:rgba(17,24,39,.08); --line2:rgba(17,24,39,.14);
+    --bg:#f7f8fa; --card:#ffffff; --blue:#3b82f6; --blue-d:#2563eb;
+    --green:#16a34a; --amber:#d97706; --red:#dc2626; --violet:#7c3aed;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    line-height:1.75; -webkit-font-smoothing:antialiased}
+  a{color:var(--blue-d); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .hero{background:linear-gradient(135deg,#111827 0%,#1f2937 55%,#374151 100%); color:#fff; padding:44px 24px 40px}
+  .hero .wrap{max-width:1180px; margin:0 auto}
+  .brand{display:flex; align-items:center; gap:12px; margin-bottom:22px}
+  .brand .mark{width:38px;height:38px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .brand .mark svg{display:block}
+  .brand .t{font-size:15px;font-weight:700;letter-spacing:.02em}
+  .brand .s{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.22em}
+  .hero h1{margin:0 0 10px; font-size:clamp(26px,3.4vw,40px); font-weight:700; letter-spacing:-.01em; line-height:1.25}
+  .hero p.lead{margin:0; max-width:800px; color:rgba(255,255,255,.78); font-size:16px}
+  .hero .meta{display:flex; flex-wrap:wrap; gap:10px; margin-top:22px}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16);color:#fff; border-radius:999px; padding:6px 14px; font-size:13px}
+  .chip b{font-weight:600}
+  .layout{max-width:1180px; margin:0 auto; padding:28px 24px 80px; display:grid; grid-template-columns:250px 1fr; gap:32px; align-items:start}
+  @media (max-width:960px){ .layout{grid-template-columns:1fr; gap:20px} }
+  nav.toc{position:sticky; top:20px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px 14px; box-shadow:0 1px 2px rgba(17,24,39,.04)}
+  nav.toc h4{margin:0 0 10px; padding:0 8px; font-size:11px; letter-spacing:.16em; color:var(--faint); text-transform:uppercase}
+  nav.toc a{display:block; padding:7px 9px; border-radius:9px; color:var(--ink2); font-size:13.5px; line-height:1.4}
+  nav.toc a:hover{background:#f3f4f6; text-decoration:none; color:var(--ink)}
+  nav.toc a .n{color:var(--faint); font-variant-numeric:tabular-nums; margin-right:8px; font-size:12px}
+  @media (max-width:960px){ nav.toc{position:static} nav.toc .links{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:2px} }
+  section{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px 28px; margin-bottom:22px; box-shadow:0 1px 2px rgba(17,24,39,.04)}
+  @media (max-width:560px){ section{padding:20px 18px} }
+  section > h2{margin:0 0 6px; font-size:22px; letter-spacing:-.01em; display:flex; align-items:center; gap:12px}
+  section > h2 .sec-n{flex:0 0 auto; width:30px;height:30px;border-radius:9px;background:var(--ink);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;font-weight:600}
+  section > .sub{margin:0 0 20px 42px; color:var(--muted); font-size:14px}
+  h3{margin:26px 0 10px; font-size:16.5px; letter-spacing:-.005em}
+  h3:first-of-type{margin-top:6px}
+  h4{margin:18px 0 8px; font-size:14.5px; color:var(--ink2)}
+  p{margin:8px 0}
+  ul,ol{margin:8px 0; padding-left:22px}
+  li{margin:5px 0}
+  code{background:#f3f4f6; border:1px solid var(--line); border-radius:6px;padding:1px 6px; font-size:12.5px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:#111827}
+  strong{font-weight:600}
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px}
+  th,td{text-align:left; vertical-align:top; padding:9px 11px; border-bottom:1px solid var(--line)}
+  th{background:#f9fafb; font-weight:600; color:var(--ink); white-space:nowrap; font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  .scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  .scroll table{min-width:560px}
+  .callout{border-radius:12px; padding:13px 16px; margin:14px 0; font-size:13.5px; border:1px solid var(--line); background:#f9fafb; color:var(--ink2)}
+  .callout .h{font-weight:600; color:var(--ink); display:block; margin-bottom:2px}
+  .callout.tip{background:#eff6ff; border-color:rgba(59,130,246,.22)}
+  .callout.warn{background:#fffbeb; border-color:rgba(217,119,6,.24)}
+  .callout.danger{background:#fef2f2; border-color:rgba(220,38,38,.22)}
+  .callout.ok{background:#f0fdf4; border-color:rgba(22,163,74,.22)}
+  .quote{border-left:3px solid var(--blue); background:#f8fafc; border-radius:0 10px 10px 0;padding:12px 16px; margin:12px 0; color:var(--ink); font-size:14.5px}
+  .quote .say{color:var(--ink2); font-size:12px; letter-spacing:.02em; display:block; margin-bottom:4px}
+  .quote p{margin:4px 0}
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin:14px 0}
+  .mini{border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:#fff}
+  .mini .t{font-weight:600; font-size:14px; margin-bottom:4px; display:flex; align-items:center; gap:8px}
+  .mini p{margin:4px 0; font-size:13px; color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:999px;flex:0 0 auto}
+  .dot.b{background:var(--blue)} .dot.g{background:var(--green)} .dot.a{background:var(--amber)} .dot.v{background:var(--violet)} .dot.r{background:var(--red)}
+  .tag{display:inline-block;border-radius:999px;padding:2px 10px;font-size:11.5px;font-weight:600;letter-spacing:.02em}
+  .tag.ck{background:#f9fafb;border:1px solid var(--line2);color:#6b7280}
+  .tag.st{background:#111827;color:#fff}
+  .tag.time{background:#eff6ff;color:#1d4ed8;border:1px solid rgba(59,130,246,.2);font-variant-numeric:tabular-nums}
+  .timeline{margin:6px 0 0; padding:0; list-style:none}
+  .timeline > li{border-left:2px solid var(--line2); padding:0 0 22px 20px; margin:0; position:relative}
+  .timeline > li:last-child{padding-bottom:2px}
+  .timeline > li::before{content:""; position:absolute; left:-6px; top:6px; width:10px;height:10px;border-radius:999px;background:var(--blue);box-shadow:0 0 0 3px #eff6ff}
+  .timeline > li.story::before{background:var(--ink);box-shadow:0 0 0 3px #e5e7eb}
+  .timeline .trow{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin-bottom:4px}
+  .timeline .tt{font-weight:600; font-size:15.5px}
+  .timeline .td{font-size:13px;color:var(--muted)}
+  .timeline ol{margin:6px 0 0; padding-left:20px}
+  .timeline ol li{font-size:13.5px; margin:4px 0}
+  .qa{border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:10px 0; background:#fff}
+  .qa .q{font-weight:600; font-size:14.5px; margin:0 0 8px; display:flex; gap:9px}
+  .qa .q .qn{color:var(--faint); font-variant-numeric:tabular-nums; flex:0 0 auto}
+  .qa .a{font-size:13.5px; color:var(--ink2); margin:0}
+  .qa .a .lead{color:var(--ink); font-weight:600}
+  .qa .deep{font-size:12.5px; color:var(--muted); margin-top:7px; padding-top:7px; border-top:1px dashed var(--line)}
+  .qa .deep b{color:var(--ink2)}
+  .checklist{list-style:none; padding:0; margin:10px 0}
+  .checklist li{position:relative; padding:6px 0 6px 30px; font-size:13.5px; border-bottom:1px dashed var(--line)}
+  .checklist li:last-child{border-bottom:none}
+  .checklist li::before{content:""; position:absolute; left:2px; top:9px; width:16px;height:16px;border-radius:5px;border:1.5px solid var(--line2); background:#fff}
+  .one-liner{background:#111827; color:#fff; border-radius:12px; padding:16px 18px; margin:12px 0; font-size:15.5px; line-height:1.7}
+  .one-liner .lbl{display:block; font-size:11px; letter-spacing:.18em; color:rgba(255,255,255,.5); margin-bottom:6px}
+  .one-liner em{font-style:normal; color:#93c5fd}
+  .footnote{color:var(--faint); font-size:12.5px; margin-top:16px}
+  footer{max-width:1180px; margin:0 auto; padding:0 24px 60px; color:var(--faint); font-size:12.5px}
+  .anchor{scroll-margin-top:20px}
+  @media print{
+    body{background:#fff}
+    .hero{background:#111827 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+    nav.toc{display:none}
+    .layout{display:block; max-width:none; padding:0}
+    section{break-inside:avoid; box-shadow:none; margin:0 0 14px; page-break-inside:avoid}
+    a{color:var(--ink)}
+    table,.qa,.callout{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 48 48"><rect width="48" height="48" rx="14" fill="#111827"/><circle cx="24" cy="19" r="7" fill="#fff"/><circle cx="24" cy="19" r="2.6" fill="#111827"/><path d="M24 26 L24 40" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="0.1 6"/></svg>
+      </span>
+      <span>
+        <span class="t">程导览</span><br>
+        <span class="s">TRIP&nbsp;GUIDE</span>
+      </span>
+    </div>
+    <h1>黑客松路演指导：7 分钟 Live Demo + 5 分钟评委问答</h1>
+    <p class="lead">按 <code style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2)">docs/ppt-prompt.md</code> 重新组织：定位是<strong>「景点内的互动引擎」＋「给合作伙伴的 AI 辅助创作平台」</strong>，演示走<strong>「体验 → 生成平台 → 从头生成」</strong>两轮（打卡·豫园 / 故事·红山）。</p>
+    <div class="meta">
+      <span class="chip">🗣️ 演讲 <b>7:00</b></span>
+      <span class="chip">❓ 问答 <b>5:00</b></span>
+      <span class="chip">🔁 演示 <b>2 轮 × 3 段</b></span>
+      <span class="chip">🧯 降级预案 <b>7 条</b></span>
+      <span class="chip">💬 预备问题 <b>40+</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" aria-label="目录">
+    <h4>目录</h4>
+    <div class="links">
+      <a href="#s0"><span class="n">00</span>怎么用这份文档</a>
+      <a href="#s1"><span class="n">01</span>定位：互动引擎 + 创作平台</a>
+      <a href="#s2"><span class="n">02</span>两种模式与各自的模板</a>
+      <a href="#s3"><span class="n">03</span>演示素材与准备</a>
+      <a href="#s4"><span class="n">04</span>7 分钟演讲稿</a>
+      <a href="#s5"><span class="n">05</span>分镜表（两轮六段）</a>
+      <a href="#s6"><span class="n">06</span>「从头生成」怎么演示</a>
+      <a href="#s7"><span class="n">07</span>风险与降级预案</a>
+      <a href="#s8"><span class="n">08</span>问答弹药库</a>
+      <a href="#s9"><span class="n">09</span>金句卡片</a>
+      <a href="#s10"><span class="n">10</span>排练 · 物料 · 极简版</a>
+    </div>
+  </nav>
+
+  <main>
+
+    <section id="s0" class="anchor">
+      <h2><span class="sec-n">00</span>怎么用这份文档</h2>
+      <p class="sub">这份是按 <code>ppt-prompt.md</code> 重写的主文档。<strong>先看 02（模板对比）和 05（分镜表）</strong>，这两页决定了整个演示的骨架。</p>
+      <div class="cards">
+        <div class="mini">
+          <div class="t"><span class="dot b"></span>如果你是主讲</div>
+          <p>背 01 的三句定位 + 04 的开场与收尾。中间的 Demo 靠 05 分镜表，不靠背。</p>
+        </div>
+        <div class="mini">
+          <div class="t"><span class="dot g"></span>如果你是操作手</div>
+          <p>只看 05 分镜表与 06：什么时间、停在哪个 URL、点哪里、「从头生成」降到哪一步。</p>
+        </div>
+        <div class="mini">
+          <div class="t"><span class="dot a"></span>如果你主答提问</div>
+          <p>先看 08 的 A（定位）、B（平台与模板）、C（内容与 AI）三组——这是新定位下评委最集中的三块。</p>
+        </div>
+      </div>
+      <div class="callout tip">
+        <span class="h">核心变化：从「讲产品」变成「讲平台」</span>
+        按 <code>ppt-prompt.md</code>，我们的客户是<strong>合作伙伴（景区 / 文旅 / 园区）</strong>，游客是他们的用户。所以全程的主语要换：不是「我们做了一个好玩的导览 App」，而是<strong>「我们给合作伙伴一套互动引擎，加一个 AI 辅助创作平台，每个模式各有自己的创作模板」</strong>。
+      </div>
+    </section>
+
+    <section id="s1" class="anchor">
+      <h2><span class="sec-n">01</span>定位：景点内的互动引擎 + 给合作伙伴的 AI 创作平台</h2>
+      <p class="sub">开场 30 秒必须把这两层说清：<strong>引擎</strong>（游客玩什么）和<strong>平台</strong>（伙伴怎么生产）。</p>
+
+      <h3>1.1 三句话定位（照念）</h3>
+      <div class="one-liner"><span class="lbl">第一句 · 引擎</span>程导览是一个<em>「景点内的互动引擎」</em>。</div>
+      <div class="one-liner"><span class="lbl">第二句 · 平台</span>它同时是给合作伙伴的一套<em>「互动流程的 AI 辅助创作平台」</em>——内容是伙伴自己生产的，我们提供生产能力。</div>
+      <div class="one-liner"><span class="lbl">第三句 · 两种模式</span>目前支持两种互动模式：<em>打卡模式</em>和<em>故事模式</em>，<em>每个模式都有各自的创作模板</em>。</div>
+
+      <h3>1.2 谁在用（一定要讲清的两层）</h3>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>角色</th><th>是谁</th><th>他们得到什么</th><th>演示里对应哪一段</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>合作伙伴（客户）</strong></td>
+            <td>景区 / 文旅局 / 博物馆 / 园区 / 展会主办方</td>
+            <td>一套互动引擎 + 一个 AI 创作平台：不改代码，就能把自己场地做成可玩的内容</td>
+            <td>「生成平台」与「从头生成」两段</td>
+          </tr>
+          <tr>
+            <td><strong>游客（最终使用者）</strong></td>
+            <td>到访的人，用手机浏览器打开</td>
+            <td>沉浸式路线引导 + 打卡点讲解（打卡模式）；多条路线的趣味探索（故事模式）</td>
+            <td>「互动体验」段</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <section id="s2" class="anchor">
+      <h2><span class="sec-n">02</span>两种模式与各自的创作模板</h2>
+      <p class="sub">这是新定位里最关键的部分：<strong>「两种模式 + 两套模板」</strong>要讲得像一个产品结构，而不是两个功能。</p>
+
+      <h3>2.1 两种互动模式（游客侧）</h3>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>维度</th><th><span class="tag ck">打卡</span> 打卡模式</th><th><span class="tag st">故事</span> 故事模式</th></tr></thead>
+        <tbody>
+          <tr><td><strong>一句话</strong></td><td>走遍每个节点：沉浸式路线引导 + 打卡点背景讲解</td><td>提供多条路线进行趣味互动，探索不同的路线</td></tr>
+          <tr><td><strong>走法</strong></td><td>按节点顺序线性走完，手动漫游或自动巡航</td><td>路口自己选，去向由故事结构决定，单路径也要人点</td></tr>
+          <tr><td><strong>地图</strong></td><td>全部节点铺出来（1…N），有进度条与路线清单</td><td><strong>迷雾</strong>：只露「我在哪」和「下一步能去哪」，不剧透</td></tr>
+          <tr><td><strong>讲解落点</strong></td><td>右上角讲解卡 + 顶部进度条</td><td>右上角「当前情节」常驻卡（可收起）</td></tr>
+          <tr><td><strong>结束</strong></td><td>走完最后一站</td><td>走到没有去向的节点＝结局，有结局结算画面（结局标题 + 本趟足迹）</td></tr>
+          <tr><td><strong>适合的场景</strong></td><td>一条街、一个园区，有明确游览顺序</td><td>两小时逛不完、有「向左还是向右」的场域</td></tr>
+          <tr><td><strong>演示案例</strong></td><td>豫园 <code>yuyuan</code></td><td>红山动物园 <code>attr-mvbsg4kw</code>（故事《黑神话悟空》）</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>2.2 两套创作模板（伙伴侧）—— 这是「平台」的证据</h3>
+      <p>两种模式在创作平台里是<strong>两个不同的编辑页、两套不同的提示词</strong>。这是可以当场演示、也经得起追问的差异化。</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>模板构成</th><th><span class="tag ck">打卡</span> 打卡创作模板</th><th><span class="tag st">故事</span> 故事创作模板</th></tr></thead>
+        <tbody>
+          <tr><td><strong>要填什么</strong></td><td>景点简介 + 每个节点的讲解</td><td>故事名 + 前情提要 + 每站情节 + 每个去向的选项文案 + 结局标题</td></tr>
+          <tr><td><strong>AI 写什么</strong></td><td>简介一段 + 每站一段（标题 / 要点 / 口播稿）</td><td>故事名与前情提要一段 + 每站一段 + 结构一段（可勾选）</td></tr>
+          <tr><td><strong>语气</strong></td><td>第三人称、导览口吻、讲清背景</td><td><strong>第二人称</strong>「你」、叙事口吻、情节要接住上一站留下的悬念</td></tr>
+          <tr><td><strong>结构编辑</strong></td><td>节点顺序＝游览顺序，没有分叉</td><td>有<strong>故事结构图</strong>（入口 / 分叉 / 结局），AI 可重排走向（<strong>节点与坐标不动</strong>）</td></tr>
+          <tr><td><strong>发布门控</strong></td><td>全部节点写过文案才能发</td><td>额外要求：结构无悬空、无孤立节点</td></tr>
+          <tr><td><strong>示例字段</strong></td><td>「景点简介 + 节点内容」两张卡</td><td>「故事结构 / 前情提要 / 节点内容 / 这个节点的去向」四张卡</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="callout tip">
+        <span class="h">被问「模板和模板之间差在哪」时的标准回答</span>
+        「不是换套皮肤，是换一套<strong>生产流程和提示词</strong>：打卡模式的模板产出的是一份带顺序的讲解清单；故事模式的模板产出的是一张<strong>有入口、分叉和结局的关系图</strong>，还要为每个岔路写选项文案。所以两者的 AI 提示词、校验规则、发布门控都不一样。」
+      </div>
+
+      <h3>2.3 三个记忆点</h3>
+      <div class="cards">
+        <div class="mini"><div class="t"><span class="dot b"></span>① 一个引擎，两种玩法</div><p>打卡是「清单」，故事是「路径」。同一份数据、同一套地图与语音，切换零迁移。</p></div>
+        <div class="mini"><div class="t"><span class="dot v"></span>② 模式自带模板</div><p>每个模式都有自己的创作模板与提示词——伙伴选模式，平台就给他对应的生产流程。</p></div>
+        <div class="mini"><div class="t"><span class="dot g"></span>③ 伙伴自己就能生产</div><p>输入名字 → 高德找地点 → 拖坐标 → AI 写内容 → 预览 → 发布。不用改一行代码。</p></div>
+      </div>
+
+      <h3>2.4 不要说的话</h3>
+      <ul>
+        <li>❌ 不要把程导览讲成「一个给游客的 App」——<strong>客户是合作伙伴</strong>。</li>
+        <li>❌ 不要说「AI 全自动」。AI 写叙事，<strong>坐标、结构边界、最终审核都是人</strong>。</li>
+        <li>❌ 不要说「两种模式随便切」——数据结构上可以，但<strong>故事包需要额外连分支、写选项</strong>，不是一键切换。</li>
+      </ul>
+    </section>

@@ -21,6 +21,8 @@ interface PublishSpotMapProps {
   onMove: (id: string, pos: LngLat) => void
   onStartMove: (pos: LngLat) => void
   onZoomChange: (zoom: number) => void
+  /** 视野中心变了（拖地图、缩放、程序化改 center 都会到）——发布端据此记下作者框的那一眼 */
+  onCenterChange: (pos: LngLat) => void
   /** 是否按节点顺序在地图上连线（起点不是第一站时会一并接上） */
   showRoute?: boolean
   onReady?: (api: PublishMapApi) => void
@@ -105,6 +107,7 @@ export function PublishSpotMap({
   onMove,
   onStartMove,
   onZoomChange,
+  onCenterChange,
   showRoute,
   onReady,
   onError,
@@ -124,6 +127,7 @@ export function PublishSpotMap({
   const onMoveRef = useRef(onMove)
   const onStartMoveRef = useRef(onStartMove)
   const onZoomChangeRef = useRef(onZoomChange)
+  const onCenterChangeRef = useRef(onCenterChange)
   const onReadyRef = useRef(onReady)
   const onErrorRef = useRef(onError)
   const spotsRef = useRef(spots)
@@ -137,6 +141,7 @@ export function PublishSpotMap({
   onMoveRef.current = onMove
   onStartMoveRef.current = onStartMove
   onZoomChangeRef.current = onZoomChange
+  onCenterChangeRef.current = onCenterChange
   onReadyRef.current = onReady
   onErrorRef.current = onError
   spotsRef.current = spots
@@ -376,9 +381,17 @@ export function PublishSpotMap({
         onResize = () => resize()
         window.addEventListener('resize', onResize)
 
+        const reportCenter = () => {
+          const c = map.getCenter()
+          onCenterChangeRef.current?.({ lng: c.getLng(), lat: c.getLat() })
+        }
+
         map.on('zoomend', () => {
           onZoomChangeRef.current(map.getZoom())
+          // 缩放也可能微调中心（比如按光标位置缩放），一并报上去
+          reportCenter()
         })
+        map.on('moveend', reportCenter)
 
         syncMarkers()
         void syncRoute()

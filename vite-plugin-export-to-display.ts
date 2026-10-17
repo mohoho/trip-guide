@@ -58,6 +58,7 @@ type Catalog = {
     coverImage: string
     publishedAt: number
     mode: string
+    storyTitle?: string
   }>
 }
 
@@ -82,6 +83,8 @@ function resolveCover(pkg: PublishedPkg): string {
 }
 
 function toCatalogEntry(pkg: PublishedPkg) {
+  const story = pkg.story as { title?: unknown } | undefined
+  const storyTitle = typeof story?.title === 'string' ? story.title.trim() : ''
   return {
     id: pkg.id,
     name: pkg.name,
@@ -89,6 +92,7 @@ function toCatalogEntry(pkg: PublishedPkg) {
     coverImage: resolveCover(pkg),
     publishedAt: pkg.publishedAt,
     mode: pkg.mode === 'story' ? 'story' : 'checkin',
+    ...(storyTitle ? { storyTitle } : {}),
   }
 }
 

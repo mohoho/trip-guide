@@ -15,7 +15,7 @@ import {
 import { PublishSpotMap, type PublishMapApi } from '../components/PublishSpotMap'
 import { CityRegionSelect } from '../components/CityRegionSelect'
 import { SpotRelativeMap } from '../components/SpotRelativeMap'
-import { buildMainPoiText, locateAttractionOnMap, resolveAttractionScope } from '../lib/amapLocate'
+import { buildMainPoiText, resolveAttractionScope } from '../lib/amapLocate'
 import {
   newSpotAt,
   newSpotFromCandidate,
@@ -40,6 +40,15 @@ import type { CandidatePoi, DraftAttraction, Spot } from '../types/attraction'
 import type { LngLat, StoryChoice } from '../lib/tourPackage'
 
 type EditorStage = 1 | 2
+
+/** 「手动加点」的落点比视图中心高一点：标记以气泡尖端为锚、向上生长，正好落在中心就会跟绿「起」叠在一起（约一个标记高） */
+const NEW_SPOT_LIFT_PX = 56
+
+/** 把视图中心按屏幕像素向北挪（按当前 zoom 折算成纬度） */
+function liftNorth(pos: LngLat, px: number, zoom: number): LngLat {
+  const metersPerPx = (156543.03392 * Math.cos((pos.lat * Math.PI) / 180)) / 2 ** zoom
+  return { lng: pos.lng, lat: pos.lat + (metersPerPx * px) / 111320 }
+}
 
 type CandidateListProps = {
   candidates: CandidatePoi[]
@@ -138,7 +147,6 @@ export function PublishEditorPage() {
   const [mapCenter, setMapCenter] = useState<LngLat | null>(null)
   const [showRoute, setShowRoute] = useState(false)
   const [resolving, setResolving] = useState(false)
-  const [locating, setLocating] = useState(false)
   const mapApiRef = useRef<PublishMapApi | null>(null)
 
   useEffect(() => {
@@ -152,7 +160,7 @@ export function PublishEditorPage() {
       }
       setDraft(item)
       setSelectedId(item.spots[0]?.id ?? null)
-      setMapCenter(item.start)
+      setMapCenter(item.view ?? item.start)
       setStage(item.lastStage ?? (item.spots.length > 0 || item.status === 'published' ? 2 : 1))
     })()
     return () => {
@@ -257,34 +265,10 @@ export function PublishEditorPage() {
     persist({ ...working, lastStage: 2 })
     setStage(2)
     window.setTimeout(() => {
-      mapApiRef.current?.setCenter(working.start)
+      // 回到作者上次框的那一眼；没框过才退回游客起点
+      mapApiRef.current?.setCenter(working.view ?? working.start)
       mapApiRef.current?.setZoom(working.zoom)
     }, 200)
-  }
-
-  /**
-   * 阶段二「按名称定位」：沿用原「AI 生成并定位」里的定位那一段。
-   * 只回写 spots —— 起点由人拖或「以选中节点为起点」决定，不采用返回的 start。
-   */
-  const onLocateSpots = async () => {
-    if (!draft || locating || resolving) return
-    if (draft.spots.length === 0) {
-      setToast('还没有节点，先勾选候选或手动加点')
-      return
-    }
-    setLocating(true)
-    setToast('正在按名称定位各节点…')
-    try {
-      const located = await locateAttractionOnMap(draft)
-      const saved = persist({ ...draft, spots: located.spots })
-      setToast(
-        `已定位 ${located.locatedCount}/${saved.spots.length} 个节点；未命中的落在景区附近，可拖动校准`,
-      )
-    } catch (e) {
-      setToast(e instanceof Error ? e.message : '定位失败')
-    } finally {
-      setLocating(false)
-    }
   }
 
   const onGoContent = (spotId?: string) => {
@@ -292,11 +276,11 @@ export function PublishEditorPage() {
     navigate(`/publish/${draft.id}/content${spotId ? `?spot=${spotId}` : ''}`)
   }
 
-  /** 新节点落在当前地图中心 */
+  /** 新节点落在当前地图中心偏上一点，避开绿「起」标记 */
   const onAddSpot = () => {
     if (!draft) return
-    const center = mapApiRef.current?.getCenter() ?? draft.start
-    const spot = newSpotAt(center, draft.spots.length)
+    const base = mapApiRef.current?.getCenter() ?? draft.start
+    const spot = newSpotAt(liftNorth(base, NEW_SPOT_LIFT_PX, draft.zoom), draft.spots.length)
     const spots = [...draft.spots, spot]
     persist({ ...draft, spots })
     setSelectedId(spot.id)
@@ -426,7 +410,7 @@ export function PublishEditorPage() {
     )
   }
 
-  const busy = resolving || locating
+  const busy = resolving
   const candidates = draft.candidates || []
   const pickedCount = candidates.filter((c) => c.picked).length
   const writtenCount = draft.spots.filter((s) => !isSpotPlaceholder(s)).length
@@ -681,17 +665,8 @@ export function PublishEditorPage() {
             <div className="p-4 space-y-3 border-b border-black/5 shrink-0 max-h-[52vh] overflow-y-auto">
               <p className="text-xs text-[#9ca3af]">阶段二 · 地图选点</p>
               <p className="text-sm text-[#6b7280] leading-relaxed">
-                勾选候选、按名称定位、拖标记校准坐标；文案留到「内容创作」再写。
+                勾选候选、拖标记校准坐标；文案留到「内容创作」再写。
               </p>
-              <button
-                type="button"
-                onClick={() => void onLocateSpots()}
-                disabled={busy || draft.spots.length === 0}
-                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#111827] text-white px-3 py-2 text-sm hover:bg-black disabled:opacity-50"
-              >
-                <MapPin size={15} />
-                {locating ? '定位中…' : '按名称定位'}
-              </button>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -944,6 +919,7 @@ export function PublishEditorPage() {
               onMove={(spotId, pos) => updateSpot(spotId, pos)}
               onStartMove={(pos) => updateDraft({ start: pos })}
               onZoomChange={(z) => updateDraft({ zoom: Number(z.toFixed(2)) })}
+              onCenterChange={(pos) => updateDraft({ view: pos })}
               onReady={(api) => {
                 mapApiRef.current = api
               }}

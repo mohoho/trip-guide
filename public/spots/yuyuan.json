@@ -4,17 +4,38 @@
   "name": "豫园",
   "description": "上海著名江南古典园林，明代潘允端为父颐养所建，园中亭台假山、玉玲珑与九曲桥闻名。",
   "start": {
-    "lng": 121.49185,
-    "lat": 31.22732
+    "lng": 121.491542,
+    "lat": 31.22646
   },
-  "zoom": 18.5,
+  "zoom": 18.66,
   "spots": [
+    {
+      "id": "jiu-qu-qiao",
+      "name": "九曲桥",
+      "poetic": "九九归一 · 步移景异",
+      "lng": 121.491875,
+      "lat": 31.226656,
+      "triggerRadiusMeters": 38,
+      "image": "/spots/yuyuan/jiu-qu-qiao.jpg",
+      "imageCredit": "Wikimedia Commons",
+      "slides": [
+        {
+          "title": "九曲桥 · 湖心亭茶楼的九曲雅韵",
+          "bullets": [
+            "桥身九曲，寓意“九九归一”。",
+            "连接湖岸与湖心亭茶楼。",
+            "漫步桥上，每一步都能换一个角度看景。"
+          ],
+          "narration": "脚下是九曲桥，桥身蜿蜒九折，寓意九九归一。它通向湖心亭茶楼，行走其间，步移景异，是豫园最富诗意的画面之一。"
+        }
+      ]
+    },
     {
       "id": "san-sui-tang",
       "name": "三穗堂",
       "poetic": "一麦三穗 · 迎客之始",
-      "lng": 121.49185,
-      "lat": 31.22732,
+      "lng": 121.491894,
+      "lat": 31.227207,
       "triggerRadiusMeters": 38,
       "image": "/spots/yuyuan/san-sui-tang.jpg",
       "imageCredit": "Wikimedia Commons",
@@ -34,8 +55,8 @@
       "id": "da-jia-shan",
       "name": "大假山",
       "poetic": "武康黄石 · 堆叠如峰",
-      "lng": 121.49205,
-      "lat": 31.22755,
+      "lng": 121.491727,
+      "lat": 31.227506,
       "triggerRadiusMeters": 38,
       "image": "/spots/yuyuan/da-jia-shan.jpg",
       "imageCredit": "Wikimedia Commons",
@@ -52,32 +73,11 @@
       ]
     },
     {
-      "id": "yu-ling-long",
-      "name": "玉玲珑",
-      "poetic": "漏透皱瘦 · 镇园之宝",
-      "lng": 121.49252,
-      "lat": 31.22708,
-      "triggerRadiusMeters": 38,
-      "image": "/spots/yuyuan/yu-ling-long.jpg",
-      "imageCredit": "Wikimedia Commons",
-      "slides": [
-        {
-          "title": "玉玲珑 · 镇园之宝",
-          "bullets": [
-            "上海著名的太湖石，有“漏、透、皱、瘦”之美。",
-            "相传为宋代花石纲遗物。",
-            "石身多孔，浇水可从各孔喷出，如烟如雾。"
-          ],
-          "narration": "这便是玉玲珑，豫园的镇园之宝。太湖石讲究漏、透、皱、瘦，玉玲珑四美俱全，相传与花石纲有关。"
-        }
-      ]
-    },
-    {
       "id": "dian-chun-tang",
       "name": "点春堂",
       "poetic": "翠点春妍 · 风云旧迹",
-      "lng": 121.49238,
-      "lat": 31.22768,
+      "lng": 121.492406,
+      "lat": 31.227464,
       "triggerRadiusMeters": 38,
       "image": "/spots/yuyuan/dian-chun-tang.jpg",
       "imageCredit": "Wikimedia Commons",
@@ -94,27 +94,31 @@
       ]
     },
     {
-      "id": "jiu-qu-qiao",
-      "name": "九曲桥",
-      "poetic": "九九归一 · 步移景异",
-      "lng": 121.4929,
-      "lat": 31.22658,
+      "id": "yu-ling-long",
+      "name": "玉玲珑",
+      "poetic": "漏透皱瘦 · 镇园之宝",
+      "lng": 121.492436,
+      "lat": 31.226563,
       "triggerRadiusMeters": 38,
-      "image": "/spots/yuyuan/jiu-qu-qiao.jpg",
+      "image": "/spots/yuyuan/yu-ling-long.jpg",
       "imageCredit": "Wikimedia Commons",
       "slides": [
         {
-          "title": "九曲桥 · 湖心亭茶楼的九曲雅韵",
+          "title": "玉玲珑 · 镇园之宝",
           "bullets": [
-            "桥身九曲，寓意“九九归一”。",
-            "连接湖岸与湖心亭茶楼。",
-            "漫步桥上，每一步都能换一个角度看景。"
+            "上海著名的太湖石，有“漏、透、皱、瘦”之美。",
+            "相传为宋代花石纲遗物。",
+            "石身多孔，浇水可从各孔喷出，如烟如雾。"
           ],
-          "narration": "脚下是九曲桥，桥身蜿蜒九折，寓意九九归一。它通向湖心亭茶楼，行走其间，步移景异，是豫园最富诗意的画面之一。"
+          "narration": "这便是玉玲珑，豫园的镇园之宝。太湖石讲究漏、透、皱、瘦，玉玲珑四美俱全，相传与花石纲有关。"
         }
       ]
     }
   ],
   "coverImage": "/spots/yuyuan/san-sui-tang.jpg",
-  "publishedAt": 1790749091038
+  "publishedAt": 1792237817286,
+  "view": {
+    "lng": 121.49251,
+    "lat": 31.226754
+  }
 }

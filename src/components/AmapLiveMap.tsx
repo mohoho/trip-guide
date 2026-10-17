@@ -13,6 +13,8 @@ export type MapApi = {
 
 interface AmapLiveMapProps {
   start: LngLat
+  /** 开场视野中心（作者在发布端框的那一眼）；不传 = 以 start 为中心 */
+  center?: LngLat
   zoom?: number
   spots: PublishedSpot[]
   activeSpotId: string | null
@@ -76,6 +78,7 @@ type AMapNS = {
 
 export function AmapLiveMap({
   start,
+  center,
   zoom = 18.5,
   spots,
   activeSpotId,
@@ -102,6 +105,7 @@ export function AmapLiveMap({
   const onErrorRef = useRef(onError)
   const spotsRef = useRef(spots)
   const startRef = useRef(start)
+  const centerRef = useRef(center)
   const zoomRef = useRef(zoom)
   const activeRef = useRef(activeSpotId)
   const labelRef = useRef(markerLabel)
@@ -163,6 +167,11 @@ export function AmapLiveMap({
     labelRef.current = markerLabel
   }, [markerLabel])
 
+  // 同上：开场取景在 effect 里取值，别在渲染期写 ref
+  useEffect(() => {
+    centerRef.current = center
+  }, [center])
+
   useEffect(() => {
     const key = import.meta.env.VITE_AMAP_KEY
     if (!key) {
@@ -182,11 +191,13 @@ export function AmapLiveMap({
         if (cancelled || !containerRef.current) return
         AMapRef.current = AMapLib
 
+        // 游客起点只决定那枚标记落哪；开场取景优先用作者框的视野中心
         const origin = startRef.current
+        const viewCenter = centerRef.current || origin
         const map = new AMapLib.Map(containerRef.current, {
           viewMode: '2D',
           zoom: zoomRef.current,
-          center: [origin.lng, origin.lat],
+          center: [viewCenter.lng, viewCenter.lat],
           mapStyle: 'amap://styles/whitesmoke',
           features: ['bg', 'road', 'building', 'point'],
           showLabel: true,

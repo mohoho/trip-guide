@@ -239,6 +239,7 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
         <AmapLiveMap
           key={pkg.id}
           start={pkg.start}
+          center={pkg.view || pkg.start}
           zoom={pkg.zoom || 18.5}
           spots={pkg.spots}
           routePath={routePath}
@@ -277,20 +278,28 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
           onClick={() => setStarted(true)}
         >
           <div
-            className="mx-4 w-full max-w-sm rounded-2xl border border-black/5 bg-white px-6 py-7 text-center shadow-xl"
+            className="mx-4 w-full max-w-sm rounded-2xl border border-black/5 bg-white px-7 py-8 text-center shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-xs text-[#9ca3af]">{storyTitle ? `${storyTitle} · 入口` : '入口'}</p>
-            <p className="mt-1.5 text-lg font-medium text-[#111827]">{current.name}</p>
+            {/* 开场封面里主标题是故事名，入口节点名退成副标题；没起名就退回节点名当标题 */}
+            <p className="text-[22px] font-semibold leading-tight text-[#111827]">
+              {storyTitle || current.name}
+            </p>
+            <p className="mt-2 text-xs text-[#9ca3af]">
+              {storyTitle ? `入口 · ${current.name}` : '入口'}
+            </p>
             {pkg.description ? (
-              <p className="mt-3 text-left text-[13px] leading-relaxed text-[#4b5563]">
-                {pkg.description}
-              </p>
+              <>
+                <div className="my-5 h-px bg-black/5" />
+                <p className="text-left text-sm leading-relaxed text-[#4b5563]">
+                  {pkg.description}
+                </p>
+              </>
             ) : null}
             <button
               type="button"
               onClick={() => setStarted(true)}
-              className="mt-5 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#3b82f6] px-6 py-2.5 text-sm text-white hover:bg-[#2563eb]"
+              className="mt-6 w-full cursor-pointer rounded-xl bg-[#3b82f6] py-3 text-sm text-white hover:bg-[#2563eb]"
             >
               开始
             </button>
@@ -307,24 +316,27 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
           onClick={() => setSettled(false)}
         >
           <div
-            className="mx-4 w-full max-w-sm rounded-2xl border border-black/5 bg-white px-6 py-7 text-center shadow-xl"
+            className="mx-4 w-full max-w-sm rounded-2xl border border-black/5 bg-white px-7 py-8 text-center shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-xs text-[#9ca3af]">结局</p>
-            <p className="mt-1.5 text-lg font-medium text-[#111827]">
+            <p className="mt-2 text-[22px] font-semibold leading-tight text-[#111827]">
               {storyEndingLabel(pkg, current.id)}
             </p>
             {walkedTrace.length > 0 && (
-              <p className="mt-4 flex items-start justify-center gap-1.5 text-[11px] leading-relaxed text-[#6b7280]">
-                <Footprints size={12} className="mt-0.5 shrink-0" />
-                <span className="min-w-0 text-left">已走：{walkedTrace.join(' → ')}</span>
-              </p>
+              <>
+                <div className="my-5 h-px bg-black/5" />
+                <p className="flex items-start justify-center gap-1.5 text-[11px] leading-relaxed text-[#6b7280]">
+                  <Footprints size={12} className="mt-0.5 shrink-0" />
+                  <span className="min-w-0 text-left">已走：{walkedTrace.join(' → ')}</span>
+                </p>
+              </>
             )}
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            <div className="mt-6 flex items-center gap-2">
               <button
                 type="button"
                 onClick={restart}
-                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-transparent bg-[#3b82f6] px-5 py-2.5 text-sm text-white hover:bg-[#2563eb]"
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-transparent bg-[#3b82f6] py-3 text-sm text-white hover:bg-[#2563eb]"
               >
                 <RotateCcw size={14} />
                 重新开始
@@ -335,7 +347,7 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
                   setSettled(false)
                   setFreeRoam(true)
                 }}
-                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-black/10 bg-white px-5 py-2.5 text-sm hover:bg-[#f3f4f6]"
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-sm hover:bg-[#f3f4f6]"
               >
                 <Compass size={14} />
                 自由漫游
@@ -366,7 +378,22 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
           </span>
         </div>
         <div className="pointer-events-auto shrink-0">
-          <AskAiPanel name={pkg.name} />
+          <AskAiPanel
+            name={pkg.name}
+            clue={{
+              here: current?.name || '入口',
+              detail: (slide?.bullets || []).filter(Boolean).join('；'),
+              choices: available.map((c) => {
+                const target = pkg.spots.find((s) => s.id === c.to)
+                const label = storyChoiceLabel(pkg, c)
+                return target
+                  ? `${label}（约 ${Math.round(haversineMeters(current ?? pkg.start, target))} 米）`
+                  : label
+              }),
+              visited: visited.length,
+              total: pkg.spots.length,
+            }}
+          />
         </div>
       </header>
 
@@ -374,14 +401,16 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
       <section className="absolute right-3 top-16 z-20 flex max-h-[calc(100vh-11rem)] w-[min(94vw,420px)] flex-col overflow-hidden rounded-2xl border border-black/5 bg-white/95 shadow-lg backdrop-blur-md">
         {cardOpen && (
           <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
-            <div className="aspect-presentation relative overflow-hidden rounded-xl bg-[#f3f4f6]">
+            <div className="relative grid overflow-hidden rounded-xl bg-[#f3f4f6]">
               <img
                 src={resolveMediaUrl(pkg, current.image)}
                 alt={current.name}
                 className="absolute inset-0 h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-              <div className="absolute inset-0 flex flex-col justify-end p-5">
+              {/* 撑高用：占位格给 16:9 的下限，文案更多时由下面那格把卡片顶高，不再被 overflow 剪掉 */}
+              <div className="aspect-presentation col-start-1 row-start-1" aria-hidden />
+              <div className="relative col-start-1 row-start-1 self-end p-5">
                 {current.poetic ? <p className="mb-1.5 text-xs text-white/70">{current.poetic}</p> : null}
                 <h2 className="text-xl font-medium leading-snug text-white">
                   {slide?.title || current.name}

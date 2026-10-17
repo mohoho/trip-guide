@@ -19,6 +19,12 @@ function startFromFirstSpot(spots: Spot[], fallback?: LngLat): LngLat {
   return fallback || { lng: 121.49195, lat: 31.2272 }
 }
 
+/** 坐标字段统一过一道：坏值当没写（视野中心只影响开场取景，缺省回落成 start） */
+function validPos(pos: LngLat | undefined | null): LngLat | undefined {
+  if (!pos || typeof pos.lng !== 'number' || typeof pos.lat !== 'number') return undefined
+  return pos
+}
+
 function normalizeDraft(raw: DraftAttraction): DraftAttraction {
   const spots = Array.isArray(raw.spots) ? raw.spots : []
   const hasStart =
@@ -34,6 +40,7 @@ function normalizeDraft(raw: DraftAttraction): DraftAttraction {
     candidates: Array.isArray(raw.candidates) ? raw.candidates : [],
     zoom: typeof raw.zoom === 'number' && raw.zoom > 0 ? raw.zoom : DEFAULT_MAP_ZOOM,
     start: hasStart ? raw.start : startFromFirstSpot(spots, raw.start),
+    view: validPos(raw.view),
   }
 }
 
@@ -69,6 +76,7 @@ export function publishedToDraft(pkg: PublishedAttraction): DraftAttraction {
     description: pkg.description,
     status: 'published',
     start: pkg.start,
+    view: validPos(pkg.view),
     zoom: pkg.zoom || DEFAULT_MAP_ZOOM,
     spots: pkg.spots.map((s) => ({
       ...s,
@@ -294,6 +302,11 @@ function avatarField(visitorAvatar: string | undefined): Pick<PublishedAttractio
   return visitorAvatar ? { visitorAvatar } : {}
 }
 
+/** 作者框过视野中心才写进包；不写 = 前台照旧以游客起点为中心 */
+function viewField(view: LngLat | undefined): Pick<PublishedAttraction, 'view'> {
+  return view ? { view } : {}
+}
+
 /** 草稿 → 展示端契约发布包（图片为 /spots/... 路径引用，二进制由 media 落盘） */
 export async function toPublishedPackage(draft: DraftAttraction): Promise<{
   pkg: PublishedAttraction
@@ -313,6 +326,7 @@ export async function toPublishedPackage(draft: DraftAttraction): Promise<{
       spots: prepared.spots.map(({ searchHint: _hint, ...rest }) => rest),
       coverImage: prepared.coverImage,
       publishedAt: Date.now(),
+      ...viewField(draft.view),
       ...storyFields(draft),
       ...avatarField(prepared.visitorAvatar),
     },
@@ -338,6 +352,7 @@ export async function toSelfContainedPackage(draft: DraftAttraction): Promise<Pu
     coverImage: prepared.coverImage,
     publishedAt: Date.now(),
     assets,
+    ...viewField(draft.view),
     ...storyFields(draft),
     ...avatarField(prepared.visitorAvatar),
   }

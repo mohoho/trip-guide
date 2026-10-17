@@ -86,6 +86,8 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
   const [asking, setAsking] = useState(false)
   const [mapReady, setMapReady] = useState(false)
   const [tourStart, setTourStart] = useState<LngLat>(PLACEHOLDER_POS)
+  /** 作者在发布端框的视野中心；缺省 = 以游客起点开场 */
+  const [tourView, setTourView] = useState<LngLat | null>(null)
   const [tourZoom, setTourZoom] = useState(18.5)
   const [routePath, setRoutePath] = useState<LngLat[] | null>(null)
   const [tourPhase, setTourPhase] = useState<TourPhase>('idle')
@@ -120,6 +122,9 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
     [nodes],
   )
 
+  /** 开场取景：作者框过就用他框的，否则退回游客起点（旧包就是这条） */
+  const mapCenter = tourView || tourStart
+
   useEffect(() => {
     activeNodeIdRef.current = activeNodeId
   }, [activeNodeId])
@@ -151,6 +156,7 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
     setAttraction(item)
     setNodes(item.spots)
     setTourStart(item.start)
+    setTourView(item.view ?? null)
     setTourZoom(item.zoom || 18.5)
     charRef.current = item.start
   }, [])
@@ -638,8 +644,9 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
         <div className="absolute inset-0">
           {nodes.length > 0 && tourStart.lng !== 0 && (
             <AmapLiveMap
-              key={`${id}-${tourZoom}-${tourStart.lng.toFixed(5)}-${tourStart.lat.toFixed(5)}`}
+              key={`${id}-${tourZoom}-${mapCenter.lng.toFixed(5)}-${mapCenter.lat.toFixed(5)}`}
               start={tourStart}
+              center={mapCenter}
               zoom={tourZoom}
               spots={nodes}
               routePath={routePath}
@@ -755,16 +762,21 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
           <div className="absolute top-3 right-3 w-[min(94vw,440px)] sm:w-[min(48vw,560px)] lg:w-[min(46vw,620px)] flex flex-col gap-2 z-20 pointer-events-none">
             <div className="rounded-2xl border border-black/5 bg-white/95 backdrop-blur-md overflow-hidden shadow-lg pointer-events-auto">
               <div className="p-3.5">
-                <div className="aspect-presentation relative rounded-xl overflow-hidden bg-[#f3f4f6]">
+                <div className="relative grid rounded-xl overflow-hidden bg-[#f3f4f6]">
+                  {/* 撑高用：占位格给 16:9 的下限，文案更多时由同格那张卡把盒子顶高，不再被 overflow 剪掉 */}
+                  <div className="aspect-presentation col-start-1 row-start-1" aria-hidden />
                   {activeSlide && activeNode ? (
-                    <div className="absolute inset-0 slide-enter" key={`${activeNode.id}-${slideIndex}`}>
+                    <div
+                      className="col-start-1 row-start-1 flex flex-col justify-end slide-enter"
+                      key={`${activeNode.id}-${slideIndex}`}
+                    >
                       <img
                         src={resolveMediaUrl(attraction, activeNode.image)}
                         alt={activeNode.name}
                         className="absolute inset-0 w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-                      <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-end">
+                      <div className="relative p-5 sm:p-6 flex flex-col justify-end">
                         {activeNode.poetic ? (
                           <p className="text-xs text-white/70 mb-1.5">{activeNode.poetic}</p>
                         ) : null}
@@ -785,7 +797,7 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
                       </div>
                     </div>
                   ) : (
-                    <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-[#111827] via-[#374151] to-[#9ca3af]">
+                    <div className="col-start-1 row-start-1 flex flex-col justify-end p-6 bg-gradient-to-t from-[#111827] via-[#374151] to-[#9ca3af]">
                       <p className="text-xs text-white/60 mb-1">导览</p>
                       <p className="text-2xl font-medium text-white">尚未入景</p>
                       <p className="mt-2 text-sm text-white/80 max-w-[320px] leading-relaxed">
@@ -847,7 +859,7 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
               className="cursor-pointer self-end flex items-center gap-2 px-3.5 py-2 rounded-full bg-white border border-black/5 shadow-sm hover:bg-[#f9fafb] text-sm pointer-events-auto"
             >
               <MessageCircle size={15} className="text-[#3b82f6]" />
-              {qaOpen ? '收起问答' : '问线索'}
+              {qaOpen ? '收起问答' : '问 AI'}
             </button>
 
             {qaOpen && (

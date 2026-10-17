@@ -25,6 +25,8 @@ export interface DraftAttraction {
   candidates?: CandidatePoi[]
   status: 'draft' | 'published'
   start: LngLat
+  /** 地图视野中心：作者在选点页框定的那一眼，导览页与预览照它开场；缺省 = 以 start 为中心 */
+  view?: LngLat
   zoom: number
   spots: Spot[]
   coverImage: string

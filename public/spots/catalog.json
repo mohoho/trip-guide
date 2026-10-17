@@ -1,14 +1,23 @@
 {
   "schemaVersion": 1,
-  "updatedAt": 1792224317900,
+  "updatedAt": 1792238076668,
   "items": [
     {
       "id": "attr-mvbsg4kw",
       "name": "红山动物园",
       "description": "你是红山猴山里最不安分的那只猴子，每天看同一片天、同一群脸。铁网外有一条路，通向你说不清的地方。今夜，你掰开那道卡扣，翻了出去。可园子比你想的更像一张网——狼、獴、虎，每双眼睛都在暗处打量你。往前走，别选错路：选错的猴子，第二天就不在了。",
       "coverImage": "/spots/attr-mvbsg4kw/spot-mvbshc2w-1.jpg",
-      "publishedAt": 1792224317847,
-      "mode": "story"
+      "publishedAt": 1792238076586,
+      "mode": "story",
+      "storyTitle": "黑神话悟空"
+    },
+    {
+      "id": "yuyuan",
+      "name": "豫园",
+      "description": "上海著名江南古典园林，明代潘允端为父颐养所建，园中亭台假山、玉玲珑与九曲桥闻名。",
+      "coverImage": "/spots/yuyuan/san-sui-tang.jpg",
+      "publishedAt": 1792237817286,
+      "mode": "checkin"
     },
     {
       "id": "attr-mv9l7mxb",
@@ -16,14 +25,6 @@
       "description": "乐山大佛乐山大佛好",
       "coverImage": "/spots/attr-mv9l7mxb/spot-mv9lbq9m-1.jpg",
       "publishedAt": 1792073767021,
-      "mode": "checkin"
-    },
-    {
-      "id": "yuyuan",
-      "name": "豫园",
-      "description": "上海著名江南古典园林，明代潘允端为父颐养所建，园中亭台假山、玉玲珑与九曲桥闻名。",
-      "coverImage": "/spots/yuyuan/san-sui-tang.jpg",
-      "publishedAt": 1790749091038,
       "mode": "checkin"
     }
   ]

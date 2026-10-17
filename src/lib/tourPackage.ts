@@ -59,6 +59,8 @@ export interface PublishedAttraction {
   name: string
   description: string
   start: LngLat
+  /** 开场视野中心：作者在发布端框定的那一眼；缺省 = 以 start 为中心 */
+  view?: LngLat
   zoom: number
   spots: PublishedSpot[]
   coverImage: string
@@ -80,6 +82,8 @@ export interface CatalogItem {
   publishedAt: number
   /** 导览模式；缺省视作 `'checkin'`（存量 catalog 没有这个字段） */
   mode?: TourMode
+  /** 故事名，卡片上跟在景点名下面的那行副标题；没有故事名就没有这个字段 */
+  storyTitle?: string
 }
 
 export interface AttractionCatalog {
@@ -100,6 +104,7 @@ export function resolveMediaUrl(
 }
 
 export function toCatalogItem(pkg: PublishedAttraction): CatalogItem {
+  const storyTitle = pkg.mode === 'story' ? pkg.story?.title?.trim() : ''
   return {
     id: pkg.id,
     name: pkg.name,
@@ -107,6 +112,7 @@ export function toCatalogItem(pkg: PublishedAttraction): CatalogItem {
     coverImage: resolveMediaUrl(pkg, pkg.coverImage),
     publishedAt: pkg.publishedAt,
     mode: pkg.mode === 'story' ? 'story' : 'checkin',
+    ...(storyTitle ? { storyTitle } : {}),
   }
 }
 
@@ -121,6 +127,10 @@ export function assertPublishedAttraction(raw: unknown): PublishedAttraction {
     throw new Error('发布包缺少合法 start')
   }
   if (typeof p.zoom !== 'number' || p.zoom <= 0) throw new Error('发布包缺少合法 zoom')
+  // 视野中心只影响开场取景，坏了就当作没写过，别让整包失败
+  if (p.view && (typeof p.view.lng !== 'number' || typeof p.view.lat !== 'number')) {
+    delete p.view
+  }
   if (!Array.isArray(p.spots) || p.spots.length === 0) throw new Error('发布包 spots 为空')
   for (const spot of p.spots) {
     if (!spot?.image) throw new Error(`节点 ${spot?.id || '?'} 缺少 image`)
