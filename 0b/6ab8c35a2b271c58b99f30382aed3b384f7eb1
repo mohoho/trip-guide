@@ -1,0 +1,47 @@
+functions/app.js
+  s_45e9f1bf69a8d8::t_64a1125fc6ca5f 1-3,5-7,10-20,25-26
+  s_45e9f1bf69a8d8::t_748e2e8ff828b4 22-24
+serverless.yml
+  s_45e9f1bf69a8d8::t_51b46e262e2c5f 1-2
+  s_45e9f1bf69a8d8::t_5a3cfd5a111396 3-5,7-14,19-34
+docs/ppt/index.html
+  s_871d97c6e8d23b::t_4e66d6f1e71404 727-731
+  s_871d97c6e8d23b::t_b5fdceb3426818 13-19
+  s_871d97c6e8d23b::t_d8a01a77f676ec 535-576,579-580,582-588,590-591,593-597,611-660,665,667,670,672-726,732-811
+  s_871d97c6e8d23b::t_05a648fc9d12e7 669
+  s_871d97c6e8d23b::t_201c3503ef93da 12
+  s_871d97c6e8d23b::t_e3769c67b33127 661-664,666,668,671
+  s_871d97c6e8d23b::t_c770e4f84064ce 1-5,7-11,20-534,812-819,923-1787
+  s_871d97c6e8d23b::t_bdcbc3402125e8 577-578,581,589,592,598-610
+  s_871d97c6e8d23b::t_e2a2c653a5b651 6
+  s_871d97c6e8d23b::t_9f6b893a5d3a6f 820-922
+index.html
+  s_45e9f1bf69a8d8::t_df3ac8a7343385 9
+  s_45e9f1bf69a8d8::t_3cc8888da880a4 8
+README.md
+  s_45e9f1bf69a8d8::t_7812b36017b52a 10-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.50-trip",
+  "base_commit_sha": "0b6ab8c35a2b271c58b99f30382aed3b384f7eb1",
+  "prompts": {},
+  "sessions": {
+    "s_45e9f1bf69a8d8": {
+      "agent_id": {
+        "tool": "chengxiaobang",
+        "id": "s_wpfwrcruvzds",
+        "model": "DeepSeek-V4.1-Flash"
+      },
+      "human_author": "qmruan <qmruan@trip.com>"
+    },
+    "s_871d97c6e8d23b": {
+      "agent_id": {
+        "tool": "chengxiaobang",
+        "id": "s_hweegajrdl58",
+        "model": "DeepSeek-V4.1-Flash"
+      },
+      "human_author": "qmruan <qmruan@trip.com>"
+    }
+  }
+}
