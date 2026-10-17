@@ -25,18 +25,18 @@ export interface DraftAttraction {
   candidates?: CandidatePoi[]
   status: 'draft' | 'published'
   start: LngLat
-  /** 地图视野中心：作者在选点页框定的那一眼，导览页与预览照它开场；缺省 = 以 start 为中心 */
+  /** 地图视野中心：作者在选点页框定的那一眼，漫游页与预览照它开场；缺省 = 以 start 为中心 */
   view?: LngLat
   zoom: number
   spots: Spot[]
   coverImage: string
-  /** 游客头像（导览页地图上那枚标记）；缺省 = 内置吉祥物 */
+  /** 游客头像（漫游页地图上那枚标记）；缺省 = 内置吉祥物 */
   visitorAvatar?: string
   createdAt: number
   updatedAt: number
   /** 阶段一/二里上次停在哪一步，进入 /publish/:id 时恢复；草稿态字段，不进发布契约 */
   lastStage?: 1 | 2
-  /** 导览模式；缺省 = 打卡 */
+  /** 漫游模式；缺省 = 打卡 */
   mode?: TourMode
   /** 故事模式的分支关系；打卡模式下留着也不进发布契约 */
   story?: StoryGraph

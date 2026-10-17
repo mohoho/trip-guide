@@ -143,7 +143,7 @@ const NOISE_NAME_KEYWORDS = [
 /**
  * 是否像「可游览的点」。
  * 先按名称排配套，再要求分类首段命中游览大类，最后按分类串排配套子类；
- * 分类缺失的一律丢弃 —— 宁少几个候选，也别把收费站塞进导览。
+ * 分类缺失的一律丢弃 —— 宁少几个候选，也别把收费站塞进漫游。
  */
 function isScenicLikePoi(p: AmapPoi): boolean {
   if (NOISE_NAME_KEYWORDS.some((k) => p.name.includes(k))) return false
@@ -210,7 +210,7 @@ export function buildMainPoiText(area: AmapPoi): string {
 export function buildAmapContextText(area: AmapPoi, nearby: AmapPoi[]): string {
   const lines = [buildMainPoiText(area)]
   if (nearby.length > 0) {
-    lines.push(`周边/相关地点（${NEARBY_RADIUS_M}m 内优先，来自高德检索，可作导览节点参考）：`)
+    lines.push(`周边/相关地点（${NEARBY_RADIUS_M}m 内优先，来自高德检索，可作漫游节点参考）：`)
     nearby.forEach((p, i) => lines.push(formatPoiLine(p, i)))
   }
   return lines.filter(Boolean).join('\n')
@@ -294,7 +294,7 @@ export type LocateResult = {
 }
 
 /**
- * 按节点 searchHint/名称，用高德定位各导览点
+ * 按节点 searchHint/名称，用高德定位各漫游点
  */
 export async function locateAttractionOnMap(draft: DraftAttraction): Promise<LocateResult> {
   const ps = await getPlaceSearch()

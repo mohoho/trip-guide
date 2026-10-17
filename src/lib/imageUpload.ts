@@ -28,7 +28,7 @@ export async function attachSpotImage(
   }
 }
 
-/** 上传游客头像（导览页地图上那枚标记）；不加这个字段就是内置吉祥物 */
+/** 上传游客头像（漫游页地图上那枚标记）；不加这个字段就是内置吉祥物 */
 export async function attachVisitorAvatar(
   draft: DraftAttraction,
   file: File,

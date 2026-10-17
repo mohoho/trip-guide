@@ -56,7 +56,11 @@ function readAll(): DraftAttraction[] {
 }
 
 function writeAll(list: DraftAttraction[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+  } catch {
+    /* 浏览器禁用存储（沙箱、隐私模式）时草稿只留内存，不阻断当前会话 */
+  }
 }
 
 /** 仅本地未发布/编辑中的草稿（与 public/spots 分离） */
@@ -175,7 +179,7 @@ export function newSpotAt(pos: LngLat, index: number): Spot {
   }
 }
 
-/** 从高德候选地点生成导览节点（坐标已确定，讲解文案待补） */
+/** 从高德候选地点生成漫游节点（坐标已确定，讲解文案待补） */
 export function newSpotFromCandidate(
   poi: { name: string; location: LngLat; address?: string },
   index: number,

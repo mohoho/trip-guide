@@ -42,9 +42,9 @@ export function HomePage() {
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 sm:px-8 py-6 sm:py-8 space-y-6">
         <div>
-          <h2 className="text-lg font-medium tracking-tight">选择景点开始导览</h2>
+          <h2 className="text-lg font-medium tracking-tight">选择景点开始漫游</h2>
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <p className="text-sm text-[#6b7280]">点击进入沉浸式地图导览，边走边听讲解</p>
+            <p className="text-sm text-[#6b7280]">点击进入沉浸式地图漫游，边走边听讲解</p>
             {/* 卡片右下角那两个标是什么意思：跟在副题同一行；没景点就不显示 */}
             {list.length > 0 && !error && (
               <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6b7280]">
@@ -94,7 +94,7 @@ export function HomePage() {
                       </h2>
                       <p className="mt-2 text-sm text-white/80 max-w-xl line-clamp-2">{item.description}</p>
                       <span className="mt-4 inline-flex items-center gap-1.5 self-start rounded-lg bg-white text-[#111827] px-3.5 py-2 text-sm font-medium">
-                        开始导览
+                        开始漫游
                         <ArrowRight size={14} />
                       </span>
                     </div>
@@ -151,7 +151,7 @@ export function HomePage() {
                           开始
                           <ArrowRight size={14} />
                         </span>
-                        {/* 与导览页页头同款的小标：故事实心、打卡描边（只写模式名） */}
+                        {/* 与漫游页页头同款的小标：故事实心、打卡描边（只写模式名） */}
                         <ModeTag mode={item.mode} />
                       </div>
                     </div>

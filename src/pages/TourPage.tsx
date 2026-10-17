@@ -445,14 +445,14 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
     [voices],
   )
 
-  /** 手动模式下节点成为当前讲解点：自动读一遍该节点的口播（对齐自动导览的"抵达即讲"） */
+  /** 手动模式下节点成为当前讲解点：自动读一遍该节点的口播（对齐自动漫游的"抵达即讲"） */
   const speakNodeIntro = (node: TourNode) => {
     if (!synthRef.current) return
     const text = node.slides[0]?.narration || ''
     if (text) speak(text)
   }
 
-  // 自动导览：Gate 解除后从第一章开始
+  // 自动漫游：Gate 解除后从第一章开始
   useEffect(() => {
     if (mode === 'auto' && autoStarted && tourPhase === 'idle') {
       walkToChapter(0)
@@ -568,14 +568,14 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
         ? '手动漫游 · 点击地图沿高德路网徐行'
         : '正在载入…'
       : !autoStarted
-        ? '自动导览待启 · 按 Space 开始'
+        ? '自动漫游待启 · 按 Space 开始'
         : tourPhase === 'walking'
           ? `前往 · ${nodes[autoChapter]?.name ?? ''}`
           : tourPhase === 'presenting'
             ? `讲解中 · ${nodes[autoChapter]?.name ?? ''}`
             : tourPhase === 'done'
-              ? '自动导览已结束'
-              : '自动导览'
+              ? '自动漫游已结束'
+              : '自动漫游'
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#f7f8fa] text-[#111827]">
@@ -591,7 +591,7 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
           <span className="text-[#d1d5db]">/</span>
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-1.5">
-              <h1 className="text-[15px] font-medium truncate">{attraction?.name || '导览'}</h1>
+              <h1 className="text-[15px] font-medium truncate">{attraction?.name || '漫游'}</h1>
               <span className="shrink-0 rounded-md bg-[#111827] px-1.5 py-0.5 text-[10px] text-white">
                 打卡
               </span>
@@ -625,7 +625,7 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
               className={`cursor-pointer px-2.5 py-1.5 transition-colors ${
                 isAuto ? 'bg-white text-[#111827] shadow-sm' : 'text-[#6b7280] hover:text-[#111827]'
               }`}
-              title="自动导览（M）"
+              title="自动漫游（M）"
             >
               自动
             </button>
@@ -689,7 +689,7 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
         {tourPhase === 'done' && isAuto && (
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 pointer-events-auto">
             <div className="rounded-2xl border border-black/5 bg-white px-7 py-6 text-center max-w-sm mx-4 shadow-xl">
-              <p className="text-lg font-medium">导览结束</p>
+              <p className="text-lg font-medium">漫游结束</p>
               <p className="mt-2 text-sm text-[#6b7280]">路线已走完，可切回手动继续游园。</p>
               <button
                 type="button"
@@ -798,11 +798,11 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
                     </div>
                   ) : (
                     <div className="col-start-1 row-start-1 flex flex-col justify-end p-6 bg-gradient-to-t from-[#111827] via-[#374151] to-[#9ca3af]">
-                      <p className="text-xs text-white/60 mb-1">导览</p>
+                      <p className="text-xs text-white/60 mb-1">漫游</p>
                       <p className="text-2xl font-medium text-white">尚未入景</p>
                       <p className="mt-2 text-sm text-white/80 max-w-[320px] leading-relaxed">
                         {isAuto
-                          ? '开启自动导览后，将按路线走动并展开讲解'
+                          ? '开启自动漫游后，将按路线走动并展开讲解'
                           : '点击地图或左侧路线，走近节点后展开讲解'}
                       </p>
                     </div>

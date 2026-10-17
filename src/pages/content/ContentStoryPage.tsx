@@ -168,7 +168,7 @@ export function ContentStoryPage({ draft, persist, initialSpotId }: ContentPageP
     })
   }
 
-  /** 故事名：与景点名并列的副标题，跟着包走，导览页也显示它 */
+  /** 故事名：与景点名并列的副标题，跟着包走，漫游页也显示它 */
   const updateStoryTitle = (value: string) => {
     persist({ ...draft, story: { ...(draft.story || {}), title: value } })
   }
@@ -474,7 +474,7 @@ export function ContentStoryPage({ draft, persist, initialSpotId }: ContentPageP
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="mx-auto w-full max-w-[1200px] px-5 py-6 sm:px-8 grid gap-6 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)] lg:items-start">
           <aside className="space-y-1 rounded-2xl border border-black/[0.06] bg-white p-3 lg:sticky lg:top-6">
-            <p className="px-1 pb-1 text-xs font-medium text-[#6b7280]">导览节点</p>
+            <p className="px-1 pb-1 text-xs font-medium text-[#6b7280]">漫游节点</p>
             {draft.spots.map((spot, index) => {
               const active = spot.id === selected.id
               return (

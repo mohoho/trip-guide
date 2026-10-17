@@ -11,7 +11,7 @@
 | 阶段二「AI 生成并定位」 | POI 关键字搜索（逐节点） | `AMap.PlaceSearch` | `src/lib/amapLocate.ts` → `locateAttractionOnMap()` |
 | 「城市 / 区域」下拉 | 行政区查询 | `AMap.DistrictSearch` | `src/lib/amapDistrict.ts` → `loadCityDistricts()` |
 
-（编辑地图本身用 `AMap.Map` / `AMap.Marker`，导览页用 `AMap.Walking`，不在本文范围。）
+（编辑地图本身用 `AMap.Map` / `AMap.Marker`，漫游页用 `AMap.Walking`，不在本文范围。）
 
 ## 2. 前置条件：key 与安全密钥
 
@@ -74,7 +74,7 @@ AMapLoader.load({ key, version: '2.0', plugins: ['AMap.PlaceSearch'] })
 类型：风景名胜;公园广场;公园
 地址：上海市黄浦区安仁街 218 号
 坐标：121.49185, 31.22732
-周边/相关地点（来自高德检索，可作导览节点参考）：
+周边/相关地点（来自高德检索，可作漫游节点参考）：
 1. 三穗堂 · 类型:... · 地址:... · 121.49185,31.22732
 ...
 ```
@@ -187,7 +187,7 @@ ds.search('中国', cb)   // 取 result.districtList[0].districtList 作为省�
 | `MISSING_REQUIRED_PARAMS` | 缺少必填参数 | - |
 | `ENGINE_RESPONSE_DATA_ERROR` | 服务响应失败 | 3 开头错误码先查参数，再提工单 |
 
-路径规划类（导览页 `AMap.Walking` 会遇到）：`OUT_OF_SERVICE`（规划点不在中国陆地范围）、`NO_ROADS_NEARBY`（附近搜不到路）、`ROUTE_FAIL`（道路连通关系导致）、`OVER_DIRECTION_RANGE`（起终点距离过长）。
+路径规划类（漫游页 `AMap.Walking` 会遇到）：`OUT_OF_SERVICE`（规划点不在中国陆地范围）、`NO_ROADS_NEARBY`（附近搜不到路）、`ROUTE_FAIL`（道路连通关系导致）、`OVER_DIRECTION_RANGE`（起终点距离过长）。
 
 ## 11. 常见问题
 

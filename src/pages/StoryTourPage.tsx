@@ -274,7 +274,7 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
         <div
           className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
           role="dialog"
-          aria-label="开始故事导览"
+          aria-label="开始故事漫游"
           onClick={() => setStarted(true)}
         >
           <div

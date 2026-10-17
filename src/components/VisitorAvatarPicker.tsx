@@ -3,7 +3,7 @@ import { ImagePlus } from 'lucide-react'
 import mascot from '../assets/visitor.png'
 
 /**
- * 游客头像：导览页地图上那枚圆牌。不上传就是内置吉祥物，
+ * 游客头像：漫游页地图上那枚圆牌。不上传就是内置吉祥物，
  * 上传过的还可以「恢复默认」退回吉祥物。故事模式里这枚标记是「你」，所以那边叫角色头像。
  */
 export function VisitorAvatarPicker({

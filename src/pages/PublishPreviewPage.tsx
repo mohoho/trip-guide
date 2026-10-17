@@ -61,7 +61,7 @@ export function PublishPreviewPage() {
   /** 与编辑页同一套门控：节点文案写全 + 故事图没有硬错 */
   const blocked = useMemo(() => {
     if (!draft) return ''
-    if (draft.spots.length === 0) return '请先生成或添加导览节点'
+    if (draft.spots.length === 0) return '请先生成或添加漫游节点'
     const written = draft.spots.filter((s) => !isSpotPlaceholder(s)).length
     if (written < draft.spots.length) {
       return `所有节点都写过文案后才能发布（${written}/${draft.spots.length}）`

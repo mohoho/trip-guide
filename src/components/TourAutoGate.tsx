@@ -12,13 +12,13 @@ export function TourAutoGate({ visible, onStart }: TourAutoGateProps) {
       className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
       onClick={onStart}
       role="dialog"
-      aria-label="开始自动导览"
+      aria-label="开始自动漫游"
     >
       <div
         className="mx-4 max-w-sm w-full rounded-2xl bg-white px-6 py-7 text-center shadow-xl border border-black/5"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-xs text-[#9ca3af]">自动导览</p>
+        <p className="text-xs text-[#9ca3af]">自动漫游</p>
         <p className="mt-2 text-lg font-medium text-[#111827]">准备开始</p>
         <p className="mt-2 text-sm text-[#6b7280] leading-relaxed">
           将按路线依次走动，抵达后口播讲解；口播结束自动前往下一站。

@@ -3,7 +3,7 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-black/[0.07] bg-white">
       <div className="mx-auto max-w-5xl px-5 py-12 text-center sm:px-8 sm:py-14">
         <p className="pl-[0.24em] text-[26px] font-semibold tracking-[0.24em] text-[#111827] sm:text-[32px]">
-          程导览
+          时空漫游者
         </p>
         <p className="mt-3 text-sm text-[#6b7280]">TRIP HACKATHON 2026</p>
         <p className="mt-7 text-sm text-[#6b7280]">焕新于技 · 第15届</p>

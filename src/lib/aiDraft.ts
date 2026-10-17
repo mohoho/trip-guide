@@ -242,9 +242,9 @@ function checkinNodeList(input: CheckinFields, mark?: number): string {
 
 /** 打卡模式 ①：景点简介给列表与封面用 */
 function checkinIntroSystemPrompt(): string {
-  return `你是文旅导览内容策划。请为给定的景点写一段简介，用于前台列表与封面。
+  return `你是文旅漫游内容策划。请为给定的景点写一段简介，用于前台列表与封面。
 - 不要输出坐标、地址或地图检索词
-- 不要用「第几站」这类导览用语
+- 不要用「第几站」这类漫游用语
 只输出一个 JSON 对象，不要其它说明。格式：
 {
   "description": "景点简介，约80～120字"
@@ -253,7 +253,7 @@ function checkinIntroSystemPrompt(): string {
 
 /** 打卡模式 ②：只写一个节点的讲解 */
 function checkinNodeSystemPrompt(count: number, index: number): string {
-  return `你是文旅导览内容策划。现在只写**第 ${index + 1} / ${count} 个导览节点**这一段讲解，别的节点不要写。
+  return `你是文旅漫游内容策划。现在只写**第 ${index + 1} / ${count} 个漫游节点**这一段讲解，别的节点不要写。
 - 节点名称与顺序都已经确定，不要改名、不要替别的节点写
 - 不要输出坐标、地址或地图检索词
 只输出一个 JSON 对象，不要其它说明。格式：
@@ -314,7 +314,7 @@ function storyIntroSystemPrompt(): string {
   "description": "前情提要，约80～120字：交代「你」是谁、为什么来到这里、这一程要做什么；像故事的开场，不要写景点介绍"
 }
 要求：
-- title 要像故事的名字而不是景点介绍，要有悬念或意象，别用「××导览」「××之旅」这种说明书口气
+- title 要像故事的名字而不是景点介绍，要有悬念或意象，别用「××漫游」「××之旅」这种说明书口气
 - 全篇第二人称「你」
 - 有「创作方向」就严格照着写（主线、语气、意象都听它的）；没写就顺着这个景点的气质自己定一条主线`
 }

@@ -1,9 +1,10 @@
 /**
- * 导览发布包类型与校验
+ * 漫游发布包类型与校验
  * 外部 AI 生产内容请遵循项目 Skill：`.cursor/skills/trip-guide-content/SKILL.md`
  */
 
 import { validateStoryGraph } from './storyTour'
+import { siteUrl } from './sitePath'
 
 export const PACKAGE_SCHEMA_VERSION = 1 as const
 
@@ -18,7 +19,7 @@ export interface Slide {
   narration: string
 }
 
-/** 导览模式：缺省（含存量包）= 打卡 */
+/** 漫游模式：缺省（含存量包）= 打卡 */
 export type TourMode = 'checkin' | 'story'
 
 /** 故事模式的一个去向；label 留空时前台显示「下一步 · 目标名」 */
@@ -66,11 +67,11 @@ export interface PublishedAttraction {
   coverImage: string
   publishedAt: number
   assets?: Record<string, string>
-  /** 导览模式；缺省视作 `'checkin'`，前台据此选页面 */
+  /** 漫游模式；缺省视作 `'checkin'`，前台据此选页面 */
   mode?: TourMode
   /** 故事模式的分支关系；打卡模式下不存在 */
   story?: StoryGraph
-  /** 游客头像（导览页地图上那枚标记）；缺省 = 内置吉祥物 */
+  /** 游客头像（漫游页地图上那枚标记）；缺省 = 内置吉祥物 */
   visitorAvatar?: string
 }
 
@@ -80,7 +81,7 @@ export interface CatalogItem {
   description: string
   coverImage: string
   publishedAt: number
-  /** 导览模式；缺省视作 `'checkin'`（存量 catalog 没有这个字段） */
+  /** 漫游模式；缺省视作 `'checkin'`（存量 catalog 没有这个字段） */
   mode?: TourMode
   /** 故事名，卡片上跟在景点名下面的那行副标题；没有故事名就没有这个字段 */
   storyTitle?: string
@@ -100,7 +101,7 @@ export function resolveMediaUrl(
   if (ref.startsWith('data:') || /^https?:\/\//i.test(ref)) return ref
   const fromAssets = pkg?.assets?.[ref]
   if (fromAssets) return fromAssets
-  return ref
+  return siteUrl(ref)
 }
 
 export function toCatalogItem(pkg: PublishedAttraction): CatalogItem {

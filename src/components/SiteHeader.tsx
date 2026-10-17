@@ -42,9 +42,9 @@ export function SiteHeader({ back, cta }: { back?: HeaderBack; cta?: HeaderCta }
         <Link to="/" className="group flex min-w-0 items-center gap-2.5" title="返回首页">
           <BrandMark />
           <span className="min-w-0 leading-tight">
-            <span className="block truncate text-[17px] font-semibold tracking-tight text-[#111827]">程导览</span>
+            <span className="block truncate text-[17px] font-semibold tracking-tight text-[#111827]">时空漫游者</span>
             <span className="block truncate text-[10px] font-medium tracking-[0.2em] text-[#9ca3af]">
-              TRIP GUIDE
+              SPACETIME WANDERER
             </span>
           </span>
         </Link>

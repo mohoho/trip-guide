@@ -18,5 +18,9 @@ export function syncAutoURL(mode: PlaybackMode) {
   const url = new URL(window.location.href)
   if (mode === 'auto') url.searchParams.set('auto', '1')
   else url.searchParams.delete('auto')
-  window.history.replaceState(null, '', url.toString())
+  try {
+    window.history.replaceState(null, '', url.toString())
+  } catch {
+    /* 托管沙箱里 History API 不可用：auto 状态走内存，地址栏不体现而已 */
+  }
 }

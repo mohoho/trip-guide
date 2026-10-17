@@ -61,7 +61,7 @@ type CandidateListProps = {
   onGenerate: () => void
 }
 
-/** 高德候选地点列表：勾选后可直接生成导览节点（阶段一/阶段二共用） */
+/** 高德候选地点列表：勾选后可直接生成漫游节点（阶段一/阶段二共用） */
 function CandidateList({
   candidates,
   pickedCount,
@@ -535,7 +535,7 @@ export function PublishEditorPage() {
                 <div>
                   <h2 className="text-lg font-medium tracking-tight">确定旅游范围</h2>
                   <p className="mt-1 text-sm leading-relaxed text-[#6b7280]">
-                    先写清景点与城市，再用高德确认景区位置与周边地点；下一步把这些地点交给 AI 生成导览。
+                    先写清景点与城市，再用高德确认景区位置与周边地点；下一步把这些地点交给 AI 生成漫游。
                   </p>
                 </div>
 
@@ -562,7 +562,7 @@ export function PublishEditorPage() {
                 </label>
 
                 <div className="border-t border-black/5 pt-4">
-                  <span className="text-xs text-[#9ca3af]">导览模式</span>
+                  <span className="text-xs text-[#9ca3af]">漫游模式</span>
                   <div className="mt-1 flex w-fit items-center gap-1 rounded-lg bg-[#f3f4f6] p-0.5">
                     {(
                       [
@@ -700,7 +700,7 @@ export function PublishEditorPage() {
               ) : (
                 <div className="px-3 py-2 space-y-1">
                   <div className="flex items-center justify-between gap-2 px-1">
-                    <p className="text-xs font-medium text-[#6b7280]">导览节点</p>
+                    <p className="text-xs font-medium text-[#6b7280]">漫游节点</p>
                     <p className="text-[11px] text-[#9ca3af] tabular-nums">
                       已编辑 {writtenCount}/{draft.spots.length}
                     </p>

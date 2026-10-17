@@ -1,15 +1,15 @@
 ---
 name: trip-guide-content
 description: >-
-  Produces 程导览 (trip-guide) published attraction packages (catalog.json and
+  Produces 时空漫游者 (trip-guide) published attraction packages (catalog.json and
   {id}.json) with spots, slides, narration, coordinates, and optional
-  assets. Use when generating or editing 程导览 导览内容, 发布包, PublishedAttraction,
+  assets. Use when generating or editing 时空漫游者 漫游内容, 发布包, PublishedAttraction,
   catalog, or when an external AI should output content for tour-hub-web/public/spots.
 ---
 
-# 程导览内容生产
+# 时空漫游者内容生产
 
-为「程导览」应用（`tour-hub-web`，包名 `trip-guide`）生产可直接投放的导览 JSON。应用读取：
+为「时空漫游者」应用（`tour-hub-web`，包名 `trip-guide`）生产可直接投放的漫游 JSON。应用读取：
 
 ```
 tour-hub-web/public/spots/catalog.json
@@ -91,7 +91,7 @@ tour-hub-web/public/spots/{id}.json
 ## 内容准则
 
 - 中文；史实谨慎，不确定处用「相传」「据说」
-- 导览顺序：入口 → 主景 → 收束
+- 漫游顺序：入口 → 主景 → 收束
 - 不要编造精确开放时间/门票价格
 - 演示期不要用 AI 乱造假实景图；无图时用 `/spots/map-intro.jpg` 占位并注明需人工上传
 
