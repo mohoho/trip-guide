@@ -49,10 +49,10 @@ function CandidateList({
   onGenerate,
 }: CandidateListProps) {
   return (
-    <div className="rounded-xl border border-black/8 bg-[#f9fafb] p-3 space-y-2">
+    <div className="space-y-2 border-t border-black/5 pt-4">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-[#6b7280]">
-          附近候选地点
+          地点信息
           <span className="ml-1 text-[#9ca3af] tabular-nums">
             {pickedCount}/{candidates.length}
           </span>
@@ -74,7 +74,7 @@ function CandidateList({
           {candidates.map((c) => (
             <label
               key={c.name}
-              className="flex cursor-pointer items-start gap-2 rounded px-1 py-1 hover:bg-white"
+              className="flex cursor-pointer items-start gap-2 rounded px-1 py-1 hover:bg-[#f9fafb]"
             >
               <input
                 type="checkbox"
@@ -84,8 +84,9 @@ function CandidateList({
               />
               <span className="min-w-0">
                 <span className="block truncate text-xs text-[#111827]">{c.name}</span>
-                <span className="block truncate text-[10px] text-[#9ca3af]">
+                <span className="block truncate text-[10px] text-[#6b7280]">
                   {[
+                    c.address,
                     c.type?.split(';').pop(),
                     typeof c.distance === 'number' && Number.isFinite(c.distance)
                       ? `${Math.round(c.distance)}m`
@@ -547,29 +548,27 @@ export function PublishEditorPage() {
                 </div>
               </section>
 
-              {/* 右：相对位置 + 候选地点 */}
-              <section className="grid gap-5">
-                <div className="space-y-3 rounded-2xl border border-black/[0.06] bg-white p-5">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium">候选地点</p>
-                    <p className="text-[11px] text-[#9ca3af]">
-                      主景点与已选地点的方位示意，不按比例尺 · 点圆点取消选中
-                    </p>
-                  </div>
-                  <SpotRelativeMap
-                    main={
-                      draft.areaPoi
-                        ? {
-                            name: draft.areaPoi.name,
-                            lng: draft.areaPoi.location.lng,
-                            lat: draft.areaPoi.location.lat,
-                          }
-                        : undefined
-                    }
-                    points={candidates.filter((c) => c.picked)}
-                    onToggle={toggleCandidate}
-                  />
+              {/* 右：候选地点（方位画布 + 明细同栏） */}
+              <section className="space-y-4 rounded-2xl border border-black/[0.06] bg-white p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium">候选地点</p>
+                  <p className="text-[11px] text-[#9ca3af]">
+                    主景点与已选地点的方位示意，不按比例尺 · 点圆点取消选中
+                  </p>
                 </div>
+                <SpotRelativeMap
+                  main={
+                    draft.areaPoi
+                      ? {
+                          name: draft.areaPoi.name,
+                          lng: draft.areaPoi.location.lng,
+                          lat: draft.areaPoi.location.lat,
+                        }
+                      : undefined
+                  }
+                  points={candidates.filter((c) => c.picked)}
+                  onToggle={toggleCandidate}
+                />
 
                 <CandidateList
                   candidates={candidates}

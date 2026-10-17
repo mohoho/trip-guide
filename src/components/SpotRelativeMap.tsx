@@ -23,13 +23,17 @@ const W_FALLBACK = 320
 const FALLBACK_R = 56
 /** 点击热区半径（比圆点大一圈，便于点选） */
 const HIT_R = 13
+/** 画布底：米白 + 极淡方格（格线比底色只亮一点点，像一张坐标纸）；标签描边取底色，重叠处才不会积出灰边 */
+const CANVAS_BG = '#fcf9f2'
+const GRID_LINE = '#fdfcf8'
+const GRID_SIZE = 15
 
 function dot(picked: boolean, isMain: boolean) {
   if (isMain) {
-    return { r: 7, fill: '#111827', stroke: '#fff', strokeWidth: 2 }
+    return { r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }
   }
   return picked
-    ? { r: 5, fill: '#111827', stroke: '#fff', strokeWidth: 1.5 }
+    ? { r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 1.5 }
     : { r: 5, fill: '#fff', stroke: '#6b7280', strokeWidth: 1.5 }
 }
 
@@ -108,7 +112,12 @@ export function SpotRelativeMap({ main, points = [], emptyHint, onToggle }: Spot
   return (
     <div
       ref={wrapRef}
-      className="flex h-[260px] w-full items-center justify-center overflow-hidden rounded-xl bg-[#eef0f3]"
+      style={{
+        backgroundColor: CANVAS_BG,
+        backgroundImage: `linear-gradient(to right, ${GRID_LINE} 1px, transparent 1px), linear-gradient(to bottom, ${GRID_LINE} 1px, transparent 1px)`,
+        backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`,
+      }}
+      className="flex h-[260px] w-full items-center justify-center overflow-hidden rounded-xl"
     >
       {hasData ? (
         <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full">
@@ -144,7 +153,7 @@ export function SpotRelativeMap({ main, points = [], emptyHint, onToggle }: Spot
                   fontSize={p.isMain ? 12 : 11}
                   fontWeight={p.isMain ? 600 : 400}
                   fill={p.isMain ? '#111827' : p.picked ? '#111827' : '#9ca3af'}
-                  stroke="#eef0f3"
+                  stroke={CANVAS_BG}
                   strokeWidth={3}
                   paintOrder="stroke"
                   className="pointer-events-none select-none"
