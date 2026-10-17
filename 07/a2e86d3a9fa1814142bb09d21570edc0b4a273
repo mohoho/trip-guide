@@ -1,0 +1,34 @@
+vite.config.ts
+  s_c6b878276bef43::t_cdac79d163dab6 7-8
+src/lib/tourPackage.ts
+  s_c6b878276bef43::t_7c9a33aebf6730 7
+src/lib/autoTour.ts
+  s_c6b878276bef43::t_b0b513c351dff4 21-25
+src/lib/draftStore.ts
+  s_c6b878276bef43::t_d309072bbabaa5 59-63
+src/lib/catalog.ts
+  s_c6b878276bef43::t_0d5d5202f44ecc 8,10,16,20
+index.html
+  s_c6b878276bef43::t_94e5986fc78d54 5
+src/App.tsx
+  s_c6b878276bef43::t_53b7be29349890 11,21
+  s_c6b878276bef43::t_65a0b09583fc31 1
+src/lib/sitePath.ts
+  s_c6b878276bef43::t_ad8e27b2570c28 1-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.50-trip",
+  "base_commit_sha": "07a2e86d3a9fa1814142bb09d21570edc0b4a273",
+  "prompts": {},
+  "sessions": {
+    "s_c6b878276bef43": {
+      "agent_id": {
+        "tool": "chengxiaobang",
+        "id": "s_gnl87hy22c6j",
+        "model": "DeepSeek-V4.1-Flash"
+      },
+      "human_author": "qmruan <qmruan@trip.com>"
+    }
+  }
+}
