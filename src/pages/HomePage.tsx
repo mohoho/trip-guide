@@ -9,8 +9,8 @@ import { loadCatalog } from '../lib/catalog'
 
 /** 首页页首的图例：色标 = 卡片上的标，后面跟一句这个标的意思 */
 const MODE_LEGEND: Array<{ mode: TourMode; text: string }> = [
-  { mode: 'story', text: '分支探索，路口自己选下一步' },
   { mode: 'checkin', text: '游遍景点，按顺序走完' },
+  { mode: 'story', text: '分支探索，路口自己选下一步' },
 ]
 
 export function HomePage() {
