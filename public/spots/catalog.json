@@ -1,27 +1,30 @@
 {
   "schemaVersion": 1,
-  "updatedAt": 1792195186614,
+  "updatedAt": 1792209842424,
   "items": [
     {
-      "id": "attr-mvaxbm9c",
+      "id": "attr-mvbsg4kw",
       "name": "红山动物园",
-      "description": "南京红山森林动物园坐落于玄武区红山南路88号，依红山山势而建，是国内知名的城市山地动物园。园区坚持尊重生命的理念，保留大片原生林木，为动物营造接近野外的栖息环境，猴山、狼馆、熊猫馆、考拉馆、虎园等场馆各具看点，是亲子游与自然科普的热门去处。",
-      "coverImage": "/spots/attr-mvaxbm9c/spot-mvaxdqn7-1.jpg",
-      "publishedAt": 1792195186598
+      "description": "南京红山森林动物园位于玄武区红山南路88号，依红山山势而建，是集动物保育、科普教育与休闲游览于一体的城市山林动物园。园内以尊重动物天性著称，猴山、狼馆、熊猫馆、考拉馆、狮虎山等展区各具特色，本土物种保育区更讲述着江南山野生灵的故事。",
+      "coverImage": "/spots/attr-mvbsg4kw/spot-mvbshc2w-1.jpg",
+      "publishedAt": 1792209842415,
+      "mode": "story"
     },
     {
       "id": "attr-mv9l7mxb",
       "name": "乐山大佛",
       "description": "乐山大佛乐山大佛好",
       "coverImage": "/spots/attr-mv9l7mxb/spot-mv9lbq9m-1.jpg",
-      "publishedAt": 1792073767021
+      "publishedAt": 1792073767021,
+      "mode": "checkin"
     },
     {
       "id": "yuyuan",
       "name": "豫园",
       "description": "上海著名江南古典园林，明代潘允端为父颐养所建，园中亭台假山、玉玲珑与九曲桥闻名。",
       "coverImage": "/spots/yuyuan/san-sui-tang.jpg",
-      "publishedAt": 1790749091038
+      "publishedAt": 1790749091038,
+      "mode": "checkin"
     }
   ]
 }

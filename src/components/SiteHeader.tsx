@@ -40,7 +40,7 @@ export function SiteHeader({ back, cta }: { back?: HeaderBack; cta?: HeaderCta }
           <span className="min-w-0 leading-tight">
             <span className="block truncate text-[17px] font-semibold tracking-tight text-[#111827]">程导览</span>
             <span className="block truncate text-[10px] font-medium tracking-[0.2em] text-[#9ca3af]">
-              CHENG GUIDE
+              TRIP GUIDE
             </span>
           </span>
         </Link>

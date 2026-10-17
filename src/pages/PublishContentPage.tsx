@@ -4,6 +4,7 @@ import { ArrowLeft, Sparkles } from 'lucide-react'
 import { SpotContentPanel } from '../components/SpotContentPanel'
 import { fillSpotContent } from '../lib/aiDraft'
 import { ensureEditableDraft, isSpotPlaceholder, publishDraft, saveDraft } from '../lib/draftStore'
+import { storyNextChoices, storyStoredChoices, validateStoryGraph } from '../lib/storyTour'
 import type { DraftAttraction, Spot } from '../types/attraction'
 
 function readImageFile(file: File): Promise<string> {
@@ -153,6 +154,32 @@ export function PublishContentPage() {
     }
   }
 
+  /** 故事模式：只改选项上的字（去向的目标在「调整地点」里连） */
+  const updateChoiceText = (spotId: string, toId: string, field: 'label' | 'note', value: string) => {
+    if (!draft) return
+    const choices = storyStoredChoices(draft, spotId).map((c) =>
+      c.to === toId ? { ...c, [field]: value } : c,
+    )
+    persist({
+      ...draft,
+      story: {
+        ...(draft.story || {}),
+        choices: { ...(draft.story?.choices || {}), [spotId]: choices },
+      },
+    })
+  }
+
+  const updateEndingTitle = (spotId: string, value: string) => {
+    if (!draft) return
+    persist({
+      ...draft,
+      story: {
+        ...(draft.story || {}),
+        endings: { ...(draft.story?.endings || {}), [spotId]: value },
+      },
+    })
+  }
+
   const onPublish = async () => {
     if (!draft) return
     if (!draft.name.trim()) {
@@ -186,6 +213,16 @@ export function PublishContentPage() {
 
   const writtenCount = draft.spots.filter((s) => !isSpotPlaceholder(s)).length
 
+  const isStory = draft.mode === 'story'
+  const storyBlockers = isStory ? validateStoryGraph(draft).filter((i) => i.level === 'error') : []
+  const spotChoices = isStory ? storyStoredChoices(draft, selected.id) : []
+  const isEnding = isStory && storyNextChoices(draft, selected.id).length === 0
+  const nameOf = (id: string) => draft.spots.find((s) => s.id === id)?.name || id
+  const implicitNextName = (() => {
+    const index = draft.spots.findIndex((s) => s.id === selected.id)
+    return (index >= 0 ? draft.spots[index + 1] : undefined)?.name || ''
+  })()
+
   return (
     <div className="h-screen flex flex-col bg-[#f7f8fa] text-[#111827]">
       <header className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-5 h-14 bg-white border-b border-black/5">
@@ -218,7 +255,8 @@ export function PublishContentPage() {
           <button
             type="button"
             onClick={() => void onPublish()}
-            disabled={busy}
+            disabled={busy || storyBlockers.length > 0}
+            title={storyBlockers[0]?.message}
             className="rounded-lg bg-[#3b82f6] text-white px-3.5 py-1.5 text-sm hover:bg-[#2563eb] disabled:opacity-50"
           >
             发布
@@ -286,6 +324,72 @@ export function PublishContentPage() {
                 onUpload={(file) => void onUploadImage(file)}
               />
             </div>
+            {isStory && (
+              <div className="rounded-2xl border border-black/[0.06] bg-white p-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium">分支文案</p>
+                  <p className="text-[11px] text-[#9ca3af]">去向的目标在「调整地点」里连，这里只写字</p>
+                </div>
+
+                {spotChoices.length === 0 && !isEnding && (
+                  <p className="text-sm text-[#9ca3af]">
+                    这个节点还没连去向，前台会按数组顺序接
+                    {implicitNextName ? `「${implicitNextName}」` : '下一站'}。
+                  </p>
+                )}
+
+                <div className="space-y-3">
+                  {spotChoices.map((choice, i) => (
+                    <div key={choice.to} className="rounded-xl border border-black/8 bg-[#f9fafb] p-3">
+                      <p className="mb-2 text-xs text-[#6b7280]">
+                        去向 {i + 1} · <span className="text-[#111827]">{nameOf(choice.to)}</span>
+                      </p>
+                      <label className="block">
+                        <span className="text-[11px] text-[#9ca3af]">选项文案（留空则显示「下一步 · 目标名」）</span>
+                        <input
+                          value={choice.label || ''}
+                          onChange={(e) => updateChoiceText(selected.id, choice.to, 'label', e.target.value)}
+                          placeholder={`下一步 · ${nameOf(choice.to)}`}
+                          className="mt-1 w-full rounded-lg border border-black/8 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-[#3b82f6]/50"
+                        />
+                      </label>
+                      <label className="mt-2 block">
+                        <span className="text-[11px] text-[#9ca3af]">一行小字（选填，如「约 80 米 · 5 分钟」）</span>
+                        <input
+                          value={choice.note || ''}
+                          onChange={(e) => updateChoiceText(selected.id, choice.to, 'note', e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-black/8 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-[#3b82f6]/50"
+                        />
+                      </label>
+                    </div>
+                  ))}
+
+                  {isEnding && (
+                    <label className="block rounded-xl border border-black/8 bg-[#f9fafb] p-3">
+                      <span className="text-[11px] text-[#9ca3af]">结局标题（留空则显示「故事结束」）</span>
+                      <input
+                        value={draft.story?.endings?.[selected.id] || ''}
+                        onChange={(e) => updateEndingTitle(selected.id, e.target.value)}
+                        placeholder="如：结局 · 登临揽胜"
+                        className="mt-1 w-full rounded-lg border border-black/8 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-[#3b82f6]/50"
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {storyBlockers.length > 0 && (
+                  <div className="mt-3 space-y-1 border-t border-black/5 pt-3">
+                    <p className="text-xs font-medium text-[#6b7280]">分支检查</p>
+                    {storyBlockers.map((issue, i) => (
+                      <p key={i} className="text-[11px] leading-relaxed text-red-600">
+                        · {issue.message}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <p className="pb-6 text-center text-xs text-[#9ca3af]">
               坐标在「调整地点」里改；这一页只写文案
             </p>

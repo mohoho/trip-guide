@@ -25,3 +25,6 @@ dist-ssr
 
 # Environment variables
 .env
+
+# Local trash for deleted spots (dev-server recovery area, not source)
+.trash

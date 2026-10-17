@@ -1,10 +1,17 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
+import { ModeTag } from '../components/ModeTag'
 import { SiteFooter } from '../components/SiteFooter'
 import { SiteHeader } from '../components/SiteHeader'
-import type { CatalogItem } from '../lib/tourPackage'
+import type { CatalogItem, TourMode } from '../lib/tourPackage'
 import { loadCatalog } from '../lib/catalog'
+
+/** 首页页首的图例：色标 = 卡片上的标，后面跟一句这个标的意思 */
+const MODE_LEGEND: Array<{ mode: TourMode; text: string }> = [
+  { mode: 'story', text: '分支探索，路口自己选下一步' },
+  { mode: 'checkin', text: '游遍景点，按顺序走完' },
+]
 
 export function HomePage() {
   const [list, setList] = useState<CatalogItem[]>([])
@@ -25,7 +32,20 @@ export function HomePage() {
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 sm:px-8 py-6 sm:py-8 space-y-6">
         <div>
           <h2 className="text-lg font-medium tracking-tight">选择景点开始导览</h2>
-          <p className="mt-1 text-sm text-[#6b7280]">点击进入沉浸式地图导览，边走边听讲解</p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <p className="text-sm text-[#6b7280]">点击进入沉浸式地图导览，边走边听讲解</p>
+            {/* 卡片右下角那两个标是什么意思：跟在副题同一行；没景点就不显示 */}
+            {list.length > 0 && !error && (
+              <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6b7280]">
+                {MODE_LEGEND.map((entry) => (
+                  <li key={entry.mode} className="inline-flex items-center gap-1.5">
+                    <ModeTag mode={entry.mode} />
+                    <span>{entry.text}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
         {error ? (
@@ -61,7 +81,7 @@ export function HomePage() {
             )}
 
             <div>
-              <div className="flex items-center justify-between mb-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-medium text-[#6b7280]">全部景点</h3>
                 <span className="text-xs text-[#9ca3af]">{list.length} 个</span>
               </div>
@@ -82,10 +102,14 @@ export function HomePage() {
                     <div className="p-3.5">
                       <h4 className="text-[15px] font-medium truncate">{item.name}</h4>
                       <p className="mt-1.5 text-sm text-[#6b7280] line-clamp-2">{item.description}</p>
-                      <span className="mt-3 inline-flex items-center gap-1 text-sm text-[#3b82f6]">
-                        开始
-                        <ArrowRight size={14} />
-                      </span>
+                      <div className="mt-3 flex items-center justify-between gap-2">
+                        <span className="inline-flex items-center gap-1 text-sm text-[#3b82f6]">
+                          开始
+                          <ArrowRight size={14} />
+                        </span>
+                        {/* 与导览页页头同款的小标：故事实心、打卡描边（只写模式名） */}
+                        <ModeTag mode={item.mode} />
+                      </div>
                     </div>
                   </Link>
                 ))}

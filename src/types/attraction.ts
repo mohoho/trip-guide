@@ -1,7 +1,7 @@
 ﻿import type { AmapPoi } from '../lib/amapLocate'
-import type { LngLat, PublishedSpot, Slide } from '../lib/tourPackage'
+import type { LngLat, PublishedSpot, StoryGraph, TourMode } from '../lib/tourPackage'
 
-export type { LngLat, Slide }
+export type { LngLat, Slide, StoryChoice, StoryGraph, TourMode } from '../lib/tourPackage'
 export type Spot = PublishedSpot & {
   /** AI 给出的地图检索词；仅发布端草稿使用，导出契约前可忽略 */
   searchHint?: string
@@ -32,4 +32,8 @@ export interface DraftAttraction {
   updatedAt: number
   /** 阶段一/二里上次停在哪一步，进入 /publish/:id 时恢复；草稿态字段，不进发布契约 */
   lastStage?: 1 | 2
+  /** 导览模式；缺省 = 打卡 */
+  mode?: TourMode
+  /** 故事模式的分支关系；打卡模式下留着也不进发布契约 */
+  story?: StoryGraph
 }

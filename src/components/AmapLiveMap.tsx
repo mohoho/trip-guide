@@ -1,6 +1,7 @@
-﻿import { useEffect, useRef } from 'react'
+﻿import { useCallback, useEffect, useRef } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import { extractWalkingPath } from '../lib/amapWalking'
+import visitorImage from '../assets/visitor.png'
 import type { LngLat, PublishedSpot } from '../lib/tourPackage'
 
 export type WalkingSearch = (from: LngLat, to: LngLat) => Promise<LngLat[] | null>
@@ -20,19 +21,30 @@ interface AmapLiveMapProps {
   onMapClick: (pos: LngLat) => void
   onSpotClick: (spot: PublishedSpot) => void
   onError: (message: string) => void
+  /**
+   * 圆牌上的字。不传 = 打卡页行为（数组下标 + 1）；给了则：字符串原样显示、
+   * 空串画个小圆点（故事模式不要序号）、null 表示这个点不出现在地图上。
+   */
+  markerLabel?: (spot: PublishedSpot, index: number) => string | null
 }
 
-function spotHtml(index: number, name: string, active: boolean) {
+function spotHtml(label: string, name: string, active: boolean) {
   const bg = active ? '#3b82f6' : '#111827'
+  const badge = label
+    ? `<div style="width:26px;height:26px;margin:0 auto;border-radius:999px;background:${bg};color:#fff;font:600 12px/26px system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25)">${label}</div>`
+    : `<div style="width:14px;height:14px;margin:6px auto;border-radius:999px;background:${bg};border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25)"></div>`
   return `<div style="transform:translate(-50%,-100%);text-align:center;pointer-events:auto;cursor:pointer">
-    <div style="width:26px;height:26px;margin:0 auto;border-radius:999px;background:${bg};color:#fff;font:600 12px/26px system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25)">${index + 1}</div>
+    ${badge}
     <div style="margin-top:3px;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.95);font:500 11px/1.2 system-ui,sans-serif;color:#111;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.12)">${name}</div>
   </div>`
 }
 
+/** 游客吉祥物：方图裁成圆，白底当圆牌，锚在点上（游客脚下就是当前坐标） */
 function visitorHtml() {
-  return `<div style="transform:translate(-50%,-85%);text-align:center">
-    <div style="width:28px;height:28px;margin:0 auto;border-radius:999px;background:#3b82f6;color:#fff;font:600 12px/28px system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 8px rgba(59,130,246,.45)">游</div>
+  return `<div style="transform:translate(-50%,-50%);text-align:center">
+    <div style="width:36px;height:36px;margin:0 auto;border-radius:999px;overflow:hidden;background:#fff;border:2px solid #fff;box-shadow:0 2px 8px rgba(59,130,246,.45)">
+      <img src="${visitorImage}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+    </div>
   </div>`
 }
 
@@ -70,6 +82,7 @@ export function AmapLiveMap({
   onMapClick,
   onSpotClick,
   onError,
+  markerLabel,
 }: AmapLiveMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const AMapRef = useRef<AMapNS | null>(null)
@@ -88,6 +101,7 @@ export function AmapLiveMap({
   const startRef = useRef(start)
   const zoomRef = useRef(zoom)
   const activeRef = useRef(activeSpotId)
+  const labelRef = useRef(markerLabel)
 
   onMapClickRef.current = onMapClick
   onSpotClickRef.current = onSpotClick
@@ -97,6 +111,53 @@ export function AmapLiveMap({
   startRef.current = start
   zoomRef.current = zoom
   activeRef.current = activeSpotId
+
+  /**
+   * 建 / 改 / 删都走这里：故事模式按可见集合增减 marker，
+   * 打卡页每次都传同一批点，等价于只改内容。
+   */
+  const syncMarkers = useCallback(() => {
+    const AMapLib = AMapRef.current
+    const map = mapRef.current
+    if (!AMapLib || !map) return
+
+    const wanted = new Set<string>()
+    spotsRef.current.forEach((node, index) => {
+      const label = labelRef.current ? labelRef.current(node, index) : String(index + 1)
+      if (label === null) return
+      wanted.add(node.id)
+      const html = spotHtml(label, node.name, node.id === activeRef.current)
+      const existing = spotMarkersRef.current[node.id]
+      if (existing) {
+        existing.setContent(html)
+        existing.setPosition([node.lng, node.lat])
+        return
+      }
+      const marker = new AMapLib.Marker({
+        position: [node.lng, node.lat],
+        content: html,
+        offset: new AMapLib.Pixel(0, 0),
+        zIndex: 110,
+      })
+      marker.on('click', () => {
+        const fresh = spotsRef.current.find((s) => s.id === node.id) || node
+        onSpotClickRef.current(fresh)
+      })
+      map.add(marker)
+      spotMarkersRef.current[node.id] = marker
+    })
+
+    for (const id of Object.keys(spotMarkersRef.current)) {
+      if (wanted.has(id)) continue
+      map.remove(spotMarkersRef.current[id])
+      delete spotMarkersRef.current[id]
+    }
+  }, [])
+
+  // 声明在初始化 effect 之前：挂载时先落值，syncMarkers 首次调用就能读到正确的圆牌规则
+  useEffect(() => {
+    labelRef.current = markerLabel
+  }, [markerLabel])
 
   useEffect(() => {
     const key = import.meta.env.VITE_AMAP_KEY
@@ -147,17 +208,7 @@ export function AmapLiveMap({
         onResize = () => resizeMap()
         window.addEventListener('resize', onResize)
 
-        spotsRef.current.forEach((node, index) => {
-          const marker = new AMapLib.Marker({
-            position: [node.lng, node.lat],
-            content: spotHtml(index, node.name, node.id === activeRef.current),
-            offset: new AMapLib.Pixel(0, 0),
-            zIndex: 110,
-          })
-          marker.on('click', () => onSpotClickRef.current(node))
-          map.add(marker)
-          spotMarkersRef.current[node.id] = marker
-        })
+        syncMarkers()
 
         const visitorMarker = new AMapLib.Marker({
           position: [origin.lng, origin.lat],
@@ -219,14 +270,11 @@ export function AmapLiveMap({
       mapRef.current?.destroy()
       mapRef.current = null
     }
-  }, [])
+  }, [syncMarkers])
 
   useEffect(() => {
-    spots.forEach((node, index) => {
-      const marker = spotMarkersRef.current[node.id]
-      if (marker) marker.setContent(spotHtml(index, node.name, node.id === activeSpotId))
-    })
-  }, [activeSpotId, spots])
+    syncMarkers()
+  }, [activeSpotId, spots, markerLabel, syncMarkers])
 
   useEffect(() => {
     const map = mapRef.current

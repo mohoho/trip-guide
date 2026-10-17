@@ -61,7 +61,12 @@ function haversineMeters(a: LngLat, b: LngLat) {
   return 2 * R * Math.asin(Math.sqrt(h))
 }
 
-export function TourPage() {
+/** 上层（TourRoute）已经把包读好时直接传进来，省掉一次重复 fetch */
+interface TourPageProps {
+  initialPackage?: PublishedAttraction
+}
+
+export function TourPage({ initialPackage }: TourPageProps = {}) {
   const { id = "" } = useParams()
   const [attraction, setAttraction] = useState<PublishedAttraction | null>(null)
   const { mode, setMode, toggleMode, autoStarted, setAutoStarted } = useTourAutoMode()
@@ -142,18 +147,29 @@ export function TourPage() {
     return () => synth.removeEventListener('voiceschanged', load)
   }, [])
 
+  const applyPackage = useCallback((item: PublishedAttraction) => {
+    setAttraction(item)
+    setNodes(item.spots)
+    setTourStart(item.start)
+    setTourZoom(item.zoom || 18.5)
+    charRef.current = item.start
+  }, [])
+
   useEffect(() => {
+    const cleanup = () => {
+      if (animRef.current) cancelAnimationFrame(animRef.current)
+      if (speechFallbackRef.current) window.clearTimeout(speechFallbackRef.current)
+    }
+    if (initialPackage) {
+      applyPackage(initialPackage)
+      return cleanup
+    }
     let cancelled = false
     void (async () => {
       try {
         const item = await loadPublishedAttraction(id)
         if (cancelled) return
-        setAttraction(item)
-        setNodes(item.spots)
-        const origin = item.start
-        setTourStart(origin)
-        setTourZoom(item.zoom || 18.5)
-        charRef.current = origin
+        applyPackage(item)
       } catch (e) {
         if (cancelled) return
         setSpotsError(e instanceof Error ? e.message : '景点加载失败')
@@ -161,10 +177,9 @@ export function TourPage() {
     })()
     return () => {
       cancelled = true
-      if (animRef.current) cancelAnimationFrame(animRef.current)
-      if (speechFallbackRef.current) window.clearTimeout(speechFallbackRef.current)
+      cleanup()
     }
-  }, [id])
+  }, [id, initialPackage, applyPackage])
 
   const clearSpeechTimers = () => {
     if (speechFallbackRef.current) {
@@ -569,7 +584,12 @@ export function TourPage() {
           </Link>
           <span className="text-[#d1d5db]">/</span>
           <div className="min-w-0">
-            <h1 className="text-[15px] font-medium truncate">{attraction?.name || '导览'}</h1>
+            <div className="flex min-w-0 items-center gap-1.5">
+              <h1 className="text-[15px] font-medium truncate">{attraction?.name || '导览'}</h1>
+              <span className="shrink-0 rounded-md bg-[#111827] px-1.5 py-0.5 text-[10px] text-white">
+                打卡
+              </span>
+            </div>
             <p className="text-xs text-[#9ca3af] truncate">
               {activeNode && (tourPhase === 'presenting' || !isAuto)
                 ? `${activeNode.name}${activeNode.poetic ? ` · ${activeNode.poetic}` : ''}`
@@ -824,7 +844,7 @@ export function TourPage() {
               className="cursor-pointer self-end flex items-center gap-2 px-3.5 py-2 rounded-full bg-white border border-black/5 shadow-sm hover:bg-[#f9fafb] text-sm pointer-events-auto"
             >
               <MessageCircle size={15} className="text-[#3b82f6]" />
-              {qaOpen ? '收起问答' : '问 AI'}
+              {qaOpen ? '收起问答' : '问线索'}
             </button>
 
             {qaOpen && (

@@ -77,6 +77,8 @@ export function publishedToDraft(pkg: PublishedAttraction): DraftAttraction {
     coverImage: resolveMediaUrl(pkg, pkg.coverImage),
     createdAt: pkg.publishedAt || now,
     updatedAt: now,
+    mode: pkg.mode === 'story' ? 'story' : undefined,
+    story: pkg.story ? { ...pkg.story } : undefined,
   }
 }
 
@@ -276,6 +278,12 @@ export async function prepareMedia(draft: DraftAttraction): Promise<{
   return { spots, coverImage, media }
 }
 
+/** 故事模式才把 mode/story 写进发布包；打卡包这两个字段一律不出现 */
+function storyFields(draft: DraftAttraction): Pick<PublishedAttraction, 'mode' | 'story'> {
+  if (draft.mode !== 'story') return {}
+  return { mode: 'story', story: draft.story ?? {} }
+}
+
 /** 草稿 → 展示端契约发布包（图片为 /spots/... 路径引用，二进制由 media 落盘） */
 export async function toPublishedPackage(draft: DraftAttraction): Promise<{
   pkg: PublishedAttraction
@@ -295,6 +303,7 @@ export async function toPublishedPackage(draft: DraftAttraction): Promise<{
       spots: prepared.spots.map(({ searchHint: _hint, ...rest }) => rest),
       coverImage: prepared.coverImage,
       publishedAt: Date.now(),
+      ...storyFields(draft),
     },
     media: prepared.media,
   }
@@ -318,6 +327,7 @@ export async function toSelfContainedPackage(draft: DraftAttraction): Promise<Pu
     coverImage: prepared.coverImage,
     publishedAt: Date.now(),
     assets,
+    ...storyFields(draft),
   }
 }
 

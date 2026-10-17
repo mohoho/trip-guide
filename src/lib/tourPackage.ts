@@ -3,6 +3,8 @@
  * 外部 AI 生产内容请遵循项目 Skill：`.cursor/skills/trip-guide-content/SKILL.md`
  */
 
+import { validateStoryGraph } from './storyTour'
+
 export const PACKAGE_SCHEMA_VERSION = 1 as const
 
 export interface LngLat {
@@ -14,6 +16,27 @@ export interface Slide {
   title: string
   bullets: string[]
   narration: string
+}
+
+/** 导览模式：缺省（含存量包）= 打卡 */
+export type TourMode = 'checkin' | 'story'
+
+/** 故事模式的一个去向；label 留空时前台显示「下一步 · 目标名」 */
+export interface StoryChoice {
+  /** 去向节点 id */
+  to: string
+  label?: string
+  /** 一行小字，如「约 80 米 · 5 分钟」 */
+  note?: string
+}
+
+/** 故事模式的分支关系；`choices` 里没有的节点按 spots 顺序接下一个，最后一个即结局 */
+export interface StoryGraph {
+  /** 入口节点 id；缺省 = spots[0] */
+  entry?: string
+  choices?: Record<string, StoryChoice[]>
+  /** 结局标题，如「结局 · 虎啸山林」 */
+  endings?: Record<string, string>
 }
 
 export interface PublishedSpot {
@@ -39,6 +62,10 @@ export interface PublishedAttraction {
   coverImage: string
   publishedAt: number
   assets?: Record<string, string>
+  /** 导览模式；缺省视作 `'checkin'`，前台据此选页面 */
+  mode?: TourMode
+  /** 故事模式的分支关系；打卡模式下不存在 */
+  story?: StoryGraph
 }
 
 export interface CatalogItem {
@@ -47,6 +74,8 @@ export interface CatalogItem {
   description: string
   coverImage: string
   publishedAt: number
+  /** 导览模式；缺省视作 `'checkin'`（存量 catalog 没有这个字段） */
+  mode?: TourMode
 }
 
 export interface AttractionCatalog {
@@ -73,6 +102,7 @@ export function toCatalogItem(pkg: PublishedAttraction): CatalogItem {
     description: pkg.description,
     coverImage: resolveMediaUrl(pkg, pkg.coverImage),
     publishedAt: pkg.publishedAt,
+    mode: pkg.mode === 'story' ? 'story' : 'checkin',
   }
 }
 
@@ -92,7 +122,14 @@ export function assertPublishedAttraction(raw: unknown): PublishedAttraction {
     if (!spot?.image) throw new Error(`节点 ${spot?.id || '?'} 缺少 image`)
   }
   if (!p.coverImage) throw new Error('发布包缺少 coverImage')
-  return p as PublishedAttraction
+  const pkg = p as PublishedAttraction
+  // 故事模式的软校验：坏了只提醒，前台照旧降级成「按数组顺序走」，不白屏
+  if (pkg.mode === 'story') {
+    for (const issue of validateStoryGraph(pkg)) {
+      if (issue.level === 'error') console.warn(`[story] ${issue.message}（已降级为按顺序走）`)
+    }
+  }
+  return pkg
 }
 
 export function assertAttractionCatalog(raw: unknown): AttractionCatalog {

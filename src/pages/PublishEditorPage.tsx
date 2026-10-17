@@ -5,6 +5,8 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  Flag,
+  GitBranch,
   MapPin,
   Plus,
   Route,
@@ -22,8 +24,16 @@ import {
   ensureEditableDraft,
   isSpotPlaceholder,
 } from '../lib/draftStore'
+import {
+  storyEntryId,
+  storyIsExplicitEnding,
+  storyNextChoices,
+  storyStoredChoices,
+  storyUnreachable,
+  validateStoryGraph,
+} from '../lib/storyTour'
 import type { CandidatePoi, DraftAttraction, Spot } from '../types/attraction'
-import type { LngLat } from '../lib/tourPackage'
+import type { LngLat, StoryChoice } from '../lib/tourPackage'
 
 type EditorStage = 1 | 2
 
@@ -232,6 +242,14 @@ export function PublishEditorPage() {
       if (!saved) return
       working = saved
     }
+    // 阶段二还没有节点：直接把勾选的候选带过去，省一次「用勾选的候选生成节点」
+    if (working.spots.length === 0) {
+      const result = syncSpotsFromCandidates(working)
+      if (result) {
+        working = result.draft
+        setToast(`已用勾选的 ${result.added} 个候选生成节点；可改名或拖标记校准`)
+      }
+    }
     persist({ ...working, lastStage: 2 })
     setStage(2)
     window.setTimeout(() => {
@@ -294,27 +312,23 @@ export function PublishEditorPage() {
     persist({ ...draft, candidates: (draft.candidates || []).map((c) => ({ ...c, picked })) })
   }
 
-  /** 用勾选的候选直接生成节点（坐标已就位，不再请求高德）；返回落盘后的草稿 */
   /**
-   * 以当前勾选为准同步阶段二节点：取消勾选的候选节点删掉、新勾选的追加，
+   * 以草稿 `base` 的当前勾选同步阶段二节点：取消勾选的候选节点删掉、新勾选的追加，
    * 已存在节点保留原有的名字/坐标/文案；手加的节点不受影响（它不对应任何候选）。
+   * 没有可做的改动（含一个候选都没勾）时返回 null。
    */
-  const createSpotsFromCandidates = (): DraftAttraction | null => {
-    if (!draft) return null
-    const picked = (draft.candidates || []).filter((c) => c.picked)
-    if (picked.length === 0) {
-      setToast('请先勾选候选地点')
-      return null
-    }
+  const syncSpotsFromCandidates = (base: DraftAttraction) => {
+    const picked = (base.candidates || []).filter((c) => c.picked)
+    if (picked.length === 0) return null
 
     /** 节点 ⇄ 候选的对应键：优先用生成时留下的 searchHint，改名后也能认出来 */
     const spotKey = (s: Spot) => s.searchHint || s.name
     const pickedNames = new Set(picked.map((c) => c.name))
-    const candidateNames = new Set((draft.candidates || []).map((c) => c.name))
+    const candidateNames = new Set((base.candidates || []).map((c) => c.name))
 
     const kept: Spot[] = []
     let removed = 0
-    for (const s of draft.spots) {
+    for (const s of base.spots) {
       const key = spotKey(s)
       // 只有「来自候选、且该候选已被取消勾选」的节点才删；手加节点与认不出来的节点都留着
       if (candidateNames.has(key) && !pickedNames.has(key)) {
@@ -333,23 +347,90 @@ export function PublishEditorPage() {
       if (added.length >= 12) break
     }
 
-    if (added.length === 0 && removed === 0) {
-      setToast('阶段二节点已与勾选一致，无需更新')
-      return null
-    }
+    if (added.length === 0 && removed === 0) return null
 
-    const saved = persist({ ...draft, spots: [...kept, ...added] })
+    const saved = persist({ ...base, spots: [...kept, ...added] })
     const focus = added[0] || kept[0]
     if (focus) {
       setSelectedId(focus.id)
       setMapCenter({ lng: focus.lng, lat: focus.lat })
     }
+    return { draft: saved, added: added.length, removed }
+  }
+
+  /** 用勾选的候选直接生成节点（坐标已就位，不再请求高德）；返回落盘后的草稿 */
+  const createSpotsFromCandidates = (): DraftAttraction | null => {
+    if (!draft) return null
+    if ((draft.candidates || []).every((c) => !c.picked)) {
+      setToast('请先勾选候选地点')
+      return null
+    }
+    const result = syncSpotsFromCandidates(draft)
+    if (!result) {
+      setToast('阶段二节点已与勾选一致，无需更新')
+      return null
+    }
     const changes = [
-      added.length > 0 ? `新增 ${added.length} 个` : '',
-      removed > 0 ? `移除 ${removed} 个` : '',
+      result.added > 0 ? `新增 ${result.added} 个` : '',
+      result.removed > 0 ? `移除 ${result.removed} 个` : '',
     ].filter(Boolean)
     setToast(`已按勾选更新节点：${changes.join('、')}；可改名或拖标记校准`)
-    return saved
+    return result.draft
+  }
+
+  /** 故事模式：改选中节点的去向表（空数组 = 显式结局） */
+  const setStoryChoices = (spotId: string, choices: StoryChoice[]) => {
+    if (!draft) return
+    persist({
+      ...draft,
+      story: {
+        ...(draft.story || {}),
+        choices: { ...(draft.story?.choices || {}), [spotId]: choices },
+      },
+    })
+  }
+
+  /** 删掉这个节点的连线，回落到「按数组顺序接下一个」 */
+  const resetStoryChoices = (spotId: string) => {
+    if (!draft) return
+    const choices = { ...(draft.story?.choices || {}) }
+    delete choices[spotId]
+    persist({ ...draft, story: { ...(draft.story || {}), choices } })
+  }
+
+  /** 勾选态直接以"生效中的去向"为准，所以没连过的节点也显示它默认接的那个 */
+  const toggleStoryChoice = (spotId: string, toId: string) => {
+    if (!draft) return
+    const current = storyNextChoices(draft, spotId)
+    const exists = current.some((c) => c.to === toId)
+    setStoryChoices(
+      spotId,
+      exists ? current.filter((c) => c.to !== toId) : [...current, { to: toId }],
+    )
+  }
+
+  const setStoryEntry = (spotId: string) => {
+    if (!draft) return
+    persist({ ...draft, story: { ...(draft.story || {}), entry: spotId } })
+  }
+
+  /** 删节点时把分支表里的引用一并清掉，免得留下一堆悬空指向 */
+  const removeSpot = (spotId: string) => {
+    if (!draft) return
+    const spots = draft.spots.filter((s) => s.id !== spotId)
+    let story = draft.story
+    if (story) {
+      const choices: Record<string, StoryChoice[]> = {}
+      for (const [from, list] of Object.entries(story.choices || {})) {
+        if (from === spotId) continue
+        choices[from] = (list || []).filter((c) => c?.to && c.to !== spotId)
+      }
+      const endings = { ...(story.endings || {}) }
+      delete endings[spotId]
+      story = { ...story, choices, endings, entry: story.entry === spotId ? undefined : story.entry }
+    }
+    persist({ ...draft, spots, story })
+    if (selectedId === spotId) setSelectedId(spots[0]?.id ?? null)
   }
 
   const onPublish = async () => {
@@ -393,6 +474,35 @@ export function PublishEditorPage() {
   const pickedCount = candidates.filter((c) => c.picked).length
   const writtenCount = draft.spots.filter((s) => !isSpotPlaceholder(s)).length
   const allWritten = draft.spots.length > 0 && writtenCount === draft.spots.length
+
+  const isStory = draft.mode === 'story'
+  const selectedSpot = draft.spots.find((s) => s.id === selectedId) || null
+  const storyIssues = isStory ? validateStoryGraph(draft) : []
+  const storyBlockers = storyIssues.filter((i) => i.level === 'error')
+  const storyWarnings = storyIssues.filter((i) => i.level === 'warn')
+  const storyOrphans = isStory ? storyUnreachable(draft) : []
+  const storyEntryName = isStory
+    ? draft.spots.find((s) => s.id === storyEntryId(draft))?.name || '—'
+    : '—'
+  const storyEndingCount = isStory
+    ? draft.spots.filter((s) => storyNextChoices(draft, s.id).length === 0).length
+    : 0
+  /** 每行下面那行小字：去向 / 结局 / 按顺序接谁 */
+  const storyRowHint = (spot: Spot) => {
+    if (!isStory) return ''
+    const nameOf = (id: string) => draft.spots.find((s) => s.id === id)?.name || id
+    if (storyIsExplicitEnding(draft, spot.id)) return '结局 · 无去向'
+    const stored = storyStoredChoices(draft, spot.id)
+    const effective = storyNextChoices(draft, spot.id)
+    if (effective.length === 0) return '结局'
+    if (stored.length === 0) return `按顺序 → ${effective.map((c) => nameOf(c.to)).join('、')}`
+    return `去向：${effective.map((c) => nameOf(c.to)).join('、')}`
+  }
+  const publishBlockedReason = !allWritten
+    ? '所有节点都写过文案后才能发布'
+    : storyBlockers.length > 0
+      ? storyBlockers[0].message
+      : ''
 
   return (
     <div className="h-screen flex flex-col bg-[#f7f8fa] text-[#111827]">
@@ -472,8 +582,8 @@ export function PublishEditorPage() {
               <button
                 type="button"
                 onClick={() => void onPublish()}
-                disabled={busy || !allWritten}
-                title={allWritten ? undefined : '所有节点都写过文案后才能发布'}
+                disabled={busy || !!publishBlockedReason}
+                title={publishBlockedReason || undefined}
                 className="rounded-lg bg-[#3b82f6] text-white px-3.5 py-1.5 text-sm hover:bg-[#2563eb] disabled:opacity-50"
               >
                 发布
@@ -517,6 +627,36 @@ export function PublishEditorPage() {
                   </div>
                   <p className="mt-1 text-[11px] text-[#9ca3af]">数据来自高德行政区查询（DistrictSearch）</p>
                 </label>
+
+                <div className="border-t border-black/5 pt-4">
+                  <span className="text-xs text-[#9ca3af]">导览模式</span>
+                  <div className="mt-1 flex w-fit items-center gap-1 rounded-lg bg-[#f3f4f6] p-0.5">
+                    {(
+                      [
+                        { key: 'checkin', label: '打卡' },
+                        { key: 'story', label: '故事' },
+                      ] as const
+                    ).map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => updateDraft({ mode: item.key })}
+                        className={`cursor-pointer rounded-md px-3 py-1.5 text-sm transition-colors ${
+                          (draft.mode || 'checkin') === item.key
+                            ? 'bg-white text-[#111827] shadow-sm'
+                            : 'text-[#6b7280] hover:text-[#111827]'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-1 text-[11px] text-[#9ca3af]">
+                    {draft.mode === 'story'
+                      ? '故事模式：节点之间自己连去向，前台由游客选路'
+                      : '打卡模式：按列表顺序线性走完'}
+                  </p>
+                </div>
 
                 <div className="space-y-2 border-t border-black/5 pt-4">
                   <div className="flex items-center justify-between gap-3">
@@ -641,6 +781,14 @@ export function PublishEditorPage() {
                       已编辑 {writtenCount}/{draft.spots.length}
                     </p>
                   </div>
+                  {isStory && (
+                    <p className="px-1 pb-1 text-[11px] text-[#9ca3af]">
+                      入口：{storyEntryName} · 结局 {storyEndingCount} 个
+                      {storyOrphans.length > 0 && (
+                        <span className="text-amber-600"> · 孤立 {storyOrphans.length} 个</span>
+                      )}
+                    </p>
+                  )}
                   {draft.spots.map((spot, index) => {
                     const active = spot.id === selectedId
                     const unwritten = isSpotPlaceholder(spot)
@@ -692,6 +840,15 @@ export function PublishEditorPage() {
                             <span className="block text-[11px] text-[#9ca3af] tabular-nums">
                               {spot.lng.toFixed(4)}, {spot.lat.toFixed(4)}
                             </span>
+                            {isStory && (
+                              <span
+                                className={`block truncate text-[11px] ${
+                                  storyIsExplicitEnding(draft, spot.id) ? 'text-[#6b7280]' : 'text-[#9ca3af]'
+                                }`}
+                              >
+                                {storyRowHint(spot)}
+                              </span>
+                            )}
                           </span>
                         </div>
                         <button
@@ -713,17 +870,89 @@ export function PublishEditorPage() {
                         <button
                           type="button"
                           className="p-1 rounded text-[#9ca3af] hover:text-red-600"
-                          onClick={() => {
-                            const spots = draft.spots.filter((s) => s.id !== spot.id)
-                            persist({ ...draft, spots })
-                            if (selectedId === spot.id) setSelectedId(spots[0]?.id ?? null)
-                          }}
+                          onClick={() => removeSpot(spot.id)}
                         >
                           <Trash2 size={14} />
                         </button>
                       </div>
                     )
                   })}
+                </div>
+              )}
+
+              {isStory && selectedSpot && (
+                <div className="space-y-3 border-t border-black/5 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="inline-flex min-w-0 items-center gap-1.5 text-xs font-medium text-[#6b7280]">
+                      <GitBranch size={12} className="shrink-0" />
+                      <span className="truncate">分支 · {selectedSpot.name}</span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setStoryEntry(selectedSpot.id)}
+                      disabled={storyEntryId(draft) === selectedSpot.id}
+                      className="shrink-0 cursor-pointer rounded border border-black/10 px-1.5 py-0.5 text-[10px] hover:bg-[#f3f4f6] disabled:opacity-45"
+                    >
+                      {storyEntryId(draft) === selectedSpot.id ? '已是入口' : '设为入口'}
+                    </button>
+                  </div>
+
+                  <div>
+                    <p className="text-[11px] text-[#9ca3af]">去向（可多选，不设上限；全不勾 = 结局）</p>
+                    <div className="mt-1 max-h-40 space-y-0.5 overflow-y-auto">
+                      {draft.spots
+                        .filter((s) => s.id !== selectedSpot.id)
+                        .map((s) => (
+                          <label
+                            key={s.id}
+                            className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-xs hover:bg-[#f9fafb]"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={storyNextChoices(draft, selectedSpot.id).some((c) => c.to === s.id)}
+                              onChange={() => toggleStoryChoice(selectedSpot.id, s.id)}
+                            />
+                            <span className="truncate">{s.name}</span>
+                          </label>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => resetStoryChoices(selectedSpot.id)}
+                      className="cursor-pointer rounded border border-black/10 px-2 py-1 text-[11px] hover:bg-[#f3f4f6]"
+                    >
+                      按数组顺序（默认）
+                    </button>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-[#9ca3af]">
+                      {storyNextChoices(draft, selectedSpot.id).length === 0 ? (
+                        <>
+                          <Flag size={11} />
+                          当前是结局
+                        </>
+                      ) : (
+                        `去向 ${storyNextChoices(draft, selectedSpot.id).length} 个`
+                      )}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {isStory && (storyBlockers.length > 0 || storyWarnings.length > 0) && (
+                <div className="space-y-1 border-t border-black/5 p-4">
+                  <p className="text-xs font-medium text-[#6b7280]">分支检查</p>
+                  {storyBlockers.map((issue, i) => (
+                    <p key={`e${i}`} className="text-[11px] leading-relaxed text-red-600">
+                      · {issue.message}
+                    </p>
+                  ))}
+                  {storyWarnings.map((issue, i) => (
+                    <p key={`w${i}`} className="text-[11px] leading-relaxed text-amber-600">
+                      · {issue.message}
+                    </p>
+                  ))}
                 </div>
               )}
 
