@@ -656,6 +656,9 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
                 if (node) goToNodeManual(node)
               }}
               onError={setMapError}
+              visitorImage={
+                attraction ? resolveMediaUrl(attraction, attraction.visitorAvatar) || undefined : undefined
+              }
             />
           )}
         </div>

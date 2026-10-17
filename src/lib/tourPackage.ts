@@ -32,6 +32,8 @@ export interface StoryChoice {
 
 /** 故事模式的分支关系；`choices` 里没有的节点按 spots 顺序接下一个，最后一个即结局 */
 export interface StoryGraph {
+  /** 故事名，与景点名并列的那行副标题；缺省 = 不起名字 */
+  title?: string
   /** 入口节点 id；缺省 = spots[0] */
   entry?: string
   choices?: Record<string, StoryChoice[]>
@@ -66,6 +68,8 @@ export interface PublishedAttraction {
   mode?: TourMode
   /** 故事模式的分支关系；打卡模式下不存在 */
   story?: StoryGraph
+  /** 游客头像（导览页地图上那枚标记）；缺省 = 内置吉祥物 */
+  visitorAvatar?: string
 }
 
 export interface CatalogItem {

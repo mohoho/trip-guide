@@ -75,6 +75,7 @@ export function publishedToDraft(pkg: PublishedAttraction): DraftAttraction {
       image: resolveMediaUrl(pkg, s.image),
     })),
     coverImage: resolveMediaUrl(pkg, pkg.coverImage),
+    visitorAvatar: pkg.visitorAvatar ? resolveMediaUrl(pkg, pkg.visitorAvatar) : undefined,
     createdAt: pkg.publishedAt || now,
     updatedAt: now,
     mode: pkg.mode === 'story' ? 'story' : undefined,
@@ -245,6 +246,7 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 export async function prepareMedia(draft: DraftAttraction): Promise<{
   spots: Spot[]
   coverImage: string
+  visitorAvatar?: string
   media: MediaFile[]
 }> {
   const media: MediaFile[] = []
@@ -275,13 +277,21 @@ export async function prepareMedia(draft: DraftAttraction): Promise<{
   // 封面若与某个节点同图，复用同一路径
   const coverImage = spots.some((s) => s.image === coverRef) ? coverRef : await put('cover', coverRef)
 
-  return { spots, coverImage, media }
+  // 游客头像：没传就整份不出现，前台照旧用内置吉祥物
+  const visitorAvatar = draft.visitorAvatar ? await put('visitor', draft.visitorAvatar) : undefined
+
+  return { spots, coverImage, visitorAvatar, media }
 }
 
 /** 故事模式才把 mode/story 写进发布包；打卡包这两个字段一律不出现 */
 function storyFields(draft: DraftAttraction): Pick<PublishedAttraction, 'mode' | 'story'> {
   if (draft.mode !== 'story') return {}
   return { mode: 'story', story: draft.story ?? {} }
+}
+
+/** 上传过游客头像才把 visitorAvatar 写进发布包 */
+function avatarField(visitorAvatar: string | undefined): Pick<PublishedAttraction, 'visitorAvatar'> {
+  return visitorAvatar ? { visitorAvatar } : {}
 }
 
 /** 草稿 → 展示端契约发布包（图片为 /spots/... 路径引用，二进制由 media 落盘） */
@@ -304,6 +314,7 @@ export async function toPublishedPackage(draft: DraftAttraction): Promise<{
       coverImage: prepared.coverImage,
       publishedAt: Date.now(),
       ...storyFields(draft),
+      ...avatarField(prepared.visitorAvatar),
     },
     media: prepared.media,
   }
@@ -328,6 +339,7 @@ export async function toSelfContainedPackage(draft: DraftAttraction): Promise<Pu
     publishedAt: Date.now(),
     assets,
     ...storyFields(draft),
+    ...avatarField(prepared.visitorAvatar),
   }
 }
 

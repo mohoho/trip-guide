@@ -28,6 +28,8 @@ export interface DraftAttraction {
   zoom: number
   spots: Spot[]
   coverImage: string
+  /** 游客头像（导览页地图上那枚标记）；缺省 = 内置吉祥物 */
+  visitorAvatar?: string
   createdAt: number
   updatedAt: number
   /** 阶段一/二里上次停在哪一步，进入 /publish/:id 时恢复；草稿态字段，不进发布契约 */
@@ -36,4 +38,6 @@ export interface DraftAttraction {
   mode?: TourMode
   /** 故事模式的分支关系；打卡模式下留着也不进发布契约 */
   story?: StoryGraph
+  /** 故事模式的创作方向（主线 / 语气 / 意象），只喂给 AI；草稿态字段，不进发布契约 */
+  storyDirection?: string
 }

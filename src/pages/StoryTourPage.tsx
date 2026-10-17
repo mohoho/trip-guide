@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Compass, Footprints, RotateCcw, Square, Volume2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Compass, Footprints, RotateCcw, Square, Volume2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AmapLiveMap, type MapApi, type WalkingSearch } from '../components/AmapLiveMap'
 import { AskAiPanel } from '../components/AskAiPanel'
@@ -27,6 +27,8 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
   const [visited, setVisited] = useState<string[]>(() => (entry ? [entry] : []))
   /** 开始遮罩：进来先不播报，点「开始」才算这一程的第一下（也顺手解开浏览器的自动播放限制） */
   const [started, setStarted] = useState(false)
+  /** 结算画面：走到结局、且该节点口播讲完才压上来 */
+  const [settled, setSettled] = useState(false)
   const [mapReady, setMapReady] = useState(false)
   const [mapError, setMapError] = useState('')
   const [moving, setMoving] = useState(false)
@@ -35,8 +37,12 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   /** 「重播」等于给同一个节点换个口令，逼播报 effect 重跑 */
   const [speakToken, setSpeakToken] = useState(0)
+  /** 当前情节卡收起后只留底栏，把地图让出来；走动换节点不改变这个选择 */
+  const [cardOpen, setCardOpen] = useState(true)
 
   const animRef = useRef<(() => void) | null>(null)
+  /** 这一趟已经弹过结算了：关掉之后不再自动弹（重播同一段口播也不弹） */
+  const settleShownRef = useRef(false)
   const charRef = useRef<LngLat>(pkg.start)
   const mapApiRef = useRef<MapApi | null>(null)
   const walkingSearchRef = useRef<WalkingSearch | null>(null)
@@ -63,6 +69,9 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
   )
 
   const slide = current?.slides[0] || null
+
+  /** 故事名：与景点名并列的副标题，撑开场用；没起名就不显示那一行 */
+  const storyTitle = pkg.story?.title?.trim() || ''
 
   /** 不回头：只列没去过的去向（§3.3 第 5 条） */
   const available = useMemo(() => {
@@ -157,6 +166,8 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
       setVisited((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]))
       setCurrentId(targetId)
       setFreeRoam(false)
+      settleShownRef.current = false
+      setSettled(false)
     })
   }
 
@@ -167,6 +178,8 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
     setFreeRoam(false)
     setVisited([entry])
     setCurrentId(entry)
+    setSettled(false)
+    settleShownRef.current = false
     setSpeakToken((t) => t + 1)
     if (node) {
       const pos = { lng: node.lng, lat: node.lat }
@@ -175,7 +188,7 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
     }
   }
 
-  /** 点「开始」后进入一个节点就播报该节点情节；走动过程中不打断 */
+  /** 点「开始」后进入一个节点就播报该节点情节；走动过程中不打断。结局节点讲完就弹结算 */
   useEffect(() => {
     if (!started) return
     const node = pkg.spots.find((s) => s.id === currentId)
@@ -184,6 +197,11 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
       synth: synthRef.current,
       voices: voicesRef.current,
       text: node?.slides[0]?.narration || '',
+      onEnd: () => {
+        if (!isEnding || settleShownRef.current) return
+        settleShownRef.current = true
+        setSettled(true)
+      },
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, currentId, speakToken, pkg])
@@ -235,6 +253,7 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
           onMapClick={onMapClick}
           onSpotClick={onSpotClick}
           onError={setMapError}
+          visitorImage={resolveMediaUrl(pkg, pkg.visitorAvatar) || undefined}
         />
       </div>
 
@@ -261,8 +280,13 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
             className="mx-4 w-full max-w-sm rounded-2xl border border-black/5 bg-white px-6 py-7 text-center shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-xs text-[#9ca3af]">入口</p>
+            <p className="text-xs text-[#9ca3af]">{storyTitle ? `${storyTitle} · 入口` : '入口'}</p>
             <p className="mt-1.5 text-lg font-medium text-[#111827]">{current.name}</p>
+            {pkg.description ? (
+              <p className="mt-3 text-left text-[13px] leading-relaxed text-[#4b5563]">
+                {pkg.description}
+              </p>
+            ) : null}
             <button
               type="button"
               onClick={() => setStarted(true)}
@@ -270,6 +294,53 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
             >
               开始
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 结算画面：走到结局、口播讲完才压上来；点空白关掉，回到结局卡上的重新开始 / 自由漫游 */}
+      {started && settled && (
+        <div
+          className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
+          role="dialog"
+          aria-label="结局结算"
+          onClick={() => setSettled(false)}
+        >
+          <div
+            className="mx-4 w-full max-w-sm rounded-2xl border border-black/5 bg-white px-6 py-7 text-center shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-xs text-[#9ca3af]">结局</p>
+            <p className="mt-1.5 text-lg font-medium text-[#111827]">
+              {storyEndingLabel(pkg, current.id)}
+            </p>
+            {walkedTrace.length > 0 && (
+              <p className="mt-4 flex items-start justify-center gap-1.5 text-[11px] leading-relaxed text-[#6b7280]">
+                <Footprints size={12} className="mt-0.5 shrink-0" />
+                <span className="min-w-0 text-left">已走：{walkedTrace.join(' → ')}</span>
+              </p>
+            )}
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={restart}
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-transparent bg-[#3b82f6] px-5 py-2.5 text-sm text-white hover:bg-[#2563eb]"
+              >
+                <RotateCcw size={14} />
+                重新开始
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSettled(false)
+                  setFreeRoam(true)
+                }}
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-black/10 bg-white px-5 py-2.5 text-sm hover:bg-[#f3f4f6]"
+              >
+                <Compass size={14} />
+                自由漫游
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -284,7 +355,12 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
             返回
           </Link>
           <span className="text-[#d1d5db]">/</span>
-          <span className="min-w-0 truncate text-sm font-medium">{pkg.name}</span>
+          <span className="min-w-0 leading-tight">
+            <span className="block truncate text-sm font-medium">{pkg.name}</span>
+            {storyTitle ? (
+              <span className="block truncate text-[11px] text-[#9ca3af]">{storyTitle}</span>
+            ) : null}
+          </span>
           <span className="shrink-0 rounded-md bg-[#111827] px-1.5 py-0.5 text-[10px] text-white">
             故事
           </span>
@@ -294,45 +370,58 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
         </div>
       </header>
 
-      {/* 右上角 · 当前情节 */}
-      <section className="absolute right-3 top-16 z-20 max-h-[calc(100vh-11rem)] w-[min(94vw,420px)] overflow-y-auto rounded-2xl border border-black/5 bg-white/95 shadow-lg backdrop-blur-md">
-        <div className="p-3.5">
-          <div className="aspect-presentation relative overflow-hidden rounded-xl bg-[#f3f4f6]">
-            <img
-              src={resolveMediaUrl(pkg, current.image)}
-              alt={current.name}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end p-5">
-              {current.poetic ? <p className="mb-1.5 text-xs text-white/70">{current.poetic}</p> : null}
-              <h2 className="text-xl font-medium leading-snug text-white">
-                {slide?.title || current.name}
-              </h2>
-              {slide && slide.bullets.length > 0 && (
-                <ul className="mt-3 space-y-1.5 text-sm text-white/90">
-                  {slide.bullets.map((b, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#93c5fd]" />
-                      <span className="leading-relaxed">{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+      {/* 右上角 · 当前情节（可收起，收起后只留底栏） */}
+      <section className="absolute right-3 top-16 z-20 flex max-h-[calc(100vh-11rem)] w-[min(94vw,420px)] flex-col overflow-hidden rounded-2xl border border-black/5 bg-white/95 shadow-lg backdrop-blur-md">
+        {cardOpen && (
+          <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
+            <div className="aspect-presentation relative overflow-hidden rounded-xl bg-[#f3f4f6]">
+              <img
+                src={resolveMediaUrl(pkg, current.image)}
+                alt={current.name}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+              <div className="absolute inset-0 flex flex-col justify-end p-5">
+                {current.poetic ? <p className="mb-1.5 text-xs text-white/70">{current.poetic}</p> : null}
+                <h2 className="text-xl font-medium leading-snug text-white">
+                  {slide?.title || current.name}
+                </h2>
+                {slide && slide.bullets.length > 0 && (
+                  <ul className="mt-3 space-y-1.5 text-sm text-white/90">
+                    {slide.bullets.map((b, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#93c5fd]" />
+                        <span className="leading-relaxed">{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
+
+            {slide?.narration ? (
+              <p className="mt-3 text-[13px] leading-relaxed text-[#4b5563]">{slide.narration}</p>
+            ) : (
+              <p className="mt-3 text-[13px] text-[#9ca3af]">这个节点还没有口播文案。</p>
+            )}
           </div>
+        )}
 
-          {slide?.narration ? (
-            <p className="mt-3 text-[13px] leading-relaxed text-[#4b5563]">{slide.narration}</p>
-          ) : (
-            <p className="mt-3 text-[13px] text-[#9ca3af]">这个节点还没有口播文案。</p>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between border-t border-black/5 px-3 py-2.5">
-          <span className="text-[11px] text-[#9ca3af]">
-            {moving ? '正在走过去…' : freeRoam ? '自由漫游中' : '当前情节'}
-          </span>
+        <div
+          className={`flex shrink-0 items-center justify-between px-3 py-2.5 ${
+            cardOpen ? 'border-t border-black/5' : ''
+          }`}
+        >
+          <button
+            type="button"
+            onClick={() => setCardOpen((o) => !o)}
+            title={cardOpen ? '收起当前情节' : '展开当前情节'}
+            aria-expanded={cardOpen}
+            className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-1.5 py-1 text-[11px] text-[#9ca3af] hover:bg-[#f3f4f6] hover:text-[#111827]"
+          >
+            {cardOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            <span>{moving ? '正在走过去…' : freeRoam ? '自由漫游中' : '当前情节'}</span>
+          </button>
           <div className="flex items-center gap-1.5">
             <button
               type="button"
@@ -383,7 +472,7 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
           </div>
         ) : (
           <div className="rounded-2xl border border-black/5 bg-white/95 p-3.5 shadow-lg backdrop-blur-md">
-            <p className="mb-2 px-0.5 text-sm font-medium">下一步去哪</p>
+            <p className="mb-2 px-0.5 text-sm font-medium">选项</p>
             <div className="space-y-1.5">
               {available.map((choice) => (
                 <button

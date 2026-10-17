@@ -26,6 +26,8 @@ interface AmapLiveMapProps {
    * 空串画个小圆点（故事模式不要序号）、null 表示这个点不出现在地图上。
    */
   markerLabel?: (spot: PublishedSpot, index: number) => string | null
+  /** 游客头像；不传 = 内置吉祥物 */
+  visitorImage?: string
 }
 
 function spotHtml(label: string, name: string, active: boolean) {
@@ -39,11 +41,11 @@ function spotHtml(label: string, name: string, active: boolean) {
   </div>`
 }
 
-/** 游客吉祥物：方图裁成圆，白底当圆牌，锚在点上（游客脚下就是当前坐标） */
-function visitorHtml() {
+/** 游客头像：方图裁成圆，白底当圆牌，锚在点上（游客脚下就是当前坐标）；没上传就用内置吉祥物 */
+function visitorHtml(src: string) {
   return `<div style="transform:translate(-50%,-50%);text-align:center">
     <div style="width:36px;height:36px;margin:0 auto;border-radius:999px;overflow:hidden;background:#fff;border:2px solid #fff;box-shadow:0 2px 8px rgba(59,130,246,.45)">
-      <img src="${visitorImage}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+      <img src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
     </div>
   </div>`
 }
@@ -83,6 +85,7 @@ export function AmapLiveMap({
   onSpotClick,
   onError,
   markerLabel,
+  visitorImage: visitorImageProp,
 }: AmapLiveMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const AMapRef = useRef<AMapNS | null>(null)
@@ -102,6 +105,7 @@ export function AmapLiveMap({
   const zoomRef = useRef(zoom)
   const activeRef = useRef(activeSpotId)
   const labelRef = useRef(markerLabel)
+  const visitorSrcRef = useRef(visitorImageProp || visitorImage)
 
   onMapClickRef.current = onMapClick
   onSpotClickRef.current = onSpotClick
@@ -212,7 +216,7 @@ export function AmapLiveMap({
 
         const visitorMarker = new AMapLib.Marker({
           position: [origin.lng, origin.lat],
-          content: visitorHtml(),
+          content: visitorHtml(visitorSrcRef.current),
           offset: new AMapLib.Pixel(0, 0),
           zIndex: 120,
         })
@@ -275,6 +279,12 @@ export function AmapLiveMap({
   useEffect(() => {
     syncMarkers()
   }, [activeSpotId, spots, markerLabel, syncMarkers])
+
+  // 换了游客头像就地换掉圆牌里的图，不用重建整张地图
+  useEffect(() => {
+    visitorSrcRef.current = visitorImageProp || visitorImage
+    visitorMarkerRef.current?.setContent(visitorHtml(visitorSrcRef.current))
+  }, [visitorImageProp])
 
   useEffect(() => {
     const map = mapRef.current

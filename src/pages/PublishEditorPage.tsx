@@ -19,7 +19,6 @@ import { buildMainPoiText, locateAttractionOnMap, resolveAttractionScope } from 
 import {
   newSpotAt,
   newSpotFromCandidate,
-  publishDraft,
   saveDraft,
   ensureEditableDraft,
   isSpotPlaceholder,
@@ -32,6 +31,11 @@ import {
   storyUnreachable,
   validateStoryGraph,
 } from '../lib/storyTour'
+import {
+  resetStoryChoices as resetStoryChoicesIn,
+  setStoryEntry as setStoryEntryIn,
+  toggleStoryChoice as toggleStoryChoiceIn,
+} from '../lib/storyGraph'
 import type { CandidatePoi, DraftAttraction, Spot } from '../types/attraction'
 import type { LngLat, StoryChoice } from '../lib/tourPackage'
 
@@ -378,40 +382,21 @@ export function PublishEditorPage() {
     return result.draft
   }
 
-  /** 故事模式：改选中节点的去向表（空数组 = 显式结局） */
-  const setStoryChoices = (spotId: string, choices: StoryChoice[]) => {
-    if (!draft) return
-    persist({
-      ...draft,
-      story: {
-        ...(draft.story || {}),
-        choices: { ...(draft.story?.choices || {}), [spotId]: choices },
-      },
-    })
-  }
-
   /** 删掉这个节点的连线，回落到「按数组顺序接下一个」 */
   const resetStoryChoices = (spotId: string) => {
     if (!draft) return
-    const choices = { ...(draft.story?.choices || {}) }
-    delete choices[spotId]
-    persist({ ...draft, story: { ...(draft.story || {}), choices } })
+    persist(resetStoryChoicesIn(draft, spotId))
   }
 
   /** 勾选态直接以"生效中的去向"为准，所以没连过的节点也显示它默认接的那个 */
   const toggleStoryChoice = (spotId: string, toId: string) => {
     if (!draft) return
-    const current = storyNextChoices(draft, spotId)
-    const exists = current.some((c) => c.to === toId)
-    setStoryChoices(
-      spotId,
-      exists ? current.filter((c) => c.to !== toId) : [...current, { to: toId }],
-    )
+    persist(toggleStoryChoiceIn(draft, spotId, toId))
   }
 
   const setStoryEntry = (spotId: string) => {
     if (!draft) return
-    persist({ ...draft, story: { ...(draft.story || {}), entry: spotId } })
+    persist(setStoryEntryIn(draft, spotId))
   }
 
   /** 删节点时把分支表里的引用一并清掉，免得留下一堆悬空指向 */
@@ -433,34 +418,6 @@ export function PublishEditorPage() {
     if (selectedId === spotId) setSelectedId(spots[0]?.id ?? null)
   }
 
-  const onPublish = async () => {
-    if (!draft) return
-    if (!draft.name.trim()) {
-      setToast('请先填写景点名称')
-      return
-    }
-    if (draft.spots.length === 0) {
-      setToast('请先生成或添加导览节点')
-      return
-    }
-    try {
-      setToast('正在打包图片…')
-      const result = await publishDraft(draft.id, { zoom: draft.zoom, start: draft.start })
-      if (result) {
-        setDraft(result.draft)
-        const n = Object.keys(result.pkg.assets || {}).length
-        if (result.mode === 'config') {
-          setToast(`已发布（${n} 张图），前台可立即查看`)
-        } else {
-          setToast(`写入 public/spots 失败，已改为下载文件（含 ${n} 张图）`)
-        }
-      }
-    } catch (e) {
-      setToast(e instanceof Error ? e.message : '导出失败')
-    }
-  }
-
-
   if (!draft) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f7f8fa] text-sm text-[#6b7280]">
@@ -473,7 +430,6 @@ export function PublishEditorPage() {
   const candidates = draft.candidates || []
   const pickedCount = candidates.filter((c) => c.picked).length
   const writtenCount = draft.spots.filter((s) => !isSpotPlaceholder(s)).length
-  const allWritten = draft.spots.length > 0 && writtenCount === draft.spots.length
 
   const isStory = draft.mode === 'story'
   const selectedSpot = draft.spots.find((s) => s.id === selectedId) || null
@@ -498,11 +454,6 @@ export function PublishEditorPage() {
     if (stored.length === 0) return `按顺序 → ${effective.map((c) => nameOf(c.to)).join('、')}`
     return `去向：${effective.map((c) => nameOf(c.to)).join('、')}`
   }
-  const publishBlockedReason = !allWritten
-    ? '所有节点都写过文案后才能发布'
-    : storyBlockers.length > 0
-      ? storyBlockers[0].message
-      : ''
 
   return (
     <div className="h-screen flex flex-col bg-[#f7f8fa] text-[#111827]">
@@ -581,12 +532,10 @@ export function PublishEditorPage() {
               </button>
               <button
                 type="button"
-                onClick={() => void onPublish()}
-                disabled={busy || !!publishBlockedReason}
-                title={publishBlockedReason || undefined}
-                className="rounded-lg bg-[#3b82f6] text-white px-3.5 py-1.5 text-sm hover:bg-[#2563eb] disabled:opacity-50"
+                onClick={() => navigate(`/publish/${draft.id}/preview?from=map`)}
+                className="rounded-lg bg-[#3b82f6] text-white px-3.5 py-1.5 text-sm hover:bg-[#2563eb]"
               >
-                发布
+                预览
               </button>
             </>
           )}

@@ -16,16 +16,20 @@ const BACK_CLASS =
 function BrandMark() {
   return (
     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[#111827] shadow-sm shadow-black/20">
+      {/* 定位针 + 虚线路径：针压在路径末端，图标即「走到哪了」。favicon.svg 是同一版 */}
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
         <path
-          d="M5 17.5 9 10.5l4 3.5 6-9"
+          d="M4 20.2c3.1-.6 5.2-2.1 6.7-4.5"
           stroke="white"
           strokeWidth="2.2"
           strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeDasharray="0.1 4.4"
         />
-        <circle cx="5" cy="17.5" r="2" fill="white" />
-        <circle cx="19" cy="5" r="2" fill="white" />
+        <path
+          d="M15.6 3.4c-2.6 0-4.7 2.1-4.7 4.7 0 3.5 4.7 8.9 4.7 8.9s4.7-5.4 4.7-8.9c0-2.6-2.1-4.7-4.7-4.7z"
+          fill="white"
+        />
+        <circle cx="15.6" cy="8" r="1.8" fill="#111827" />
       </svg>
     </span>
   )
