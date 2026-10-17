@@ -1,4 +1,5 @@
 import type { Slide } from './tourPackage'
+import { AI_MODEL, aiEndpoint } from './aiConfig'
 
 /**
  * 打卡模式的上下文：景点简介与逐个节点的讲解是**两段独立的请求**，
@@ -349,20 +350,13 @@ async function callModel(
   user: string,
   key?: string,
 ): Promise<{ parsed: Record<string, unknown>; truncated: boolean }> {
-  const baseUrl = import.meta.env.VITE_DEEPSEEK_BASE_URL
-  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY
-  const model = import.meta.env.VITE_DEEPSEEK_MODEL || 'deepseek-chat'
+  const { url, headers } = aiEndpoint()
 
-  if (!baseUrl || !apiKey) throw new Error('未配置 VITE_DEEPSEEK_BASE_URL / VITE_DEEPSEEK_API_KEY')
-
-  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
+  const res = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers,
     body: JSON.stringify({
-      model,
+      model: AI_MODEL,
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user },

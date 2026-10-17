@@ -14,6 +14,7 @@ import { AmapLiveMap, type MapApi, type WalkingSearch } from '../components/Amap
 import { TourAutoGate } from '../components/TourAutoGate'
 import { TourProgressBar } from '../components/TourProgressBar'
 import { useTourAutoMode } from '../hooks/useTourAutoMode'
+import { AI_MODEL, aiEndpoint } from '../lib/aiConfig'
 import { estimateSpeechMs, type TourPhase } from '../lib/autoTour'
 import { loadPublishedAttraction } from '../lib/catalog'
 import { resolveMediaUrl, type LngLat, type PublishedAttraction, type PublishedSpot } from '../lib/tourPackage'
@@ -523,20 +524,14 @@ export function TourPage({ initialPackage }: TourPageProps = {}) {
     if (!question.trim()) return
     setAsking(true)
     setAnswer('')
-    const baseUrl = import.meta.env.VITE_DEEPSEEK_BASE_URL
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY
-    const model = import.meta.env.VITE_DEEPSEEK_MODEL || 'deepseek-v4.1-flash'
 
     try {
-      if (!baseUrl || !apiKey) throw new Error('missing env')
-      const res = await fetch(`${baseUrl}/chat/completions`, {
+      const { url, headers } = aiEndpoint()
+      const res = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
+        headers,
         body: JSON.stringify({
-          model,
+          model: AI_MODEL,
           messages: [
             { role: 'system', content: buildSystemPrompt(attraction?.name || '景点') },
             { role: 'user', content: question.trim() },

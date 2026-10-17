@@ -1,0 +1,17 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: trip-guide-web:latest
+    container_name: trip-guide-web
+    restart: unless-stopped
+    ports:
+      # 宿主 80/443 被 1Panel 的 OpenResty 占着，这里走 8080。
+      # 只改冒号左边的宿主端口，右边必须留 80（容器内 Nginx 监听在 80）。
+      - "8080:80"
+    # 可选：把已发布的景点数据挂出来，之后加景点只需上传文件、不必重建镜像。
+    # 启用前先把本地 public/spots 整个拷到宿主机 /opt/trip-guide/spots，
+    # 否则挂载会盖掉镜像里那份，前台目录直接变空。
+    # volumes:
+    #   - /opt/trip-guide/spots:/usr/share/nginx/html/spots

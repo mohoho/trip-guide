@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { HelpCircle, MessageCircle, Send } from 'lucide-react'
+import { AI_MODEL, aiEndpoint } from '../lib/aiConfig'
 
 /**
  * 故事页的"线索"上下文：问答要能答「我该怎么走」就得知道游客站在哪、能去哪。
@@ -48,20 +49,14 @@ export function AskAiPanel({ name, clue }: { name: string; clue?: AskClue }) {
     if (!question.trim()) return
     setAsking(true)
     setAnswer('')
-    const baseUrl = import.meta.env.VITE_DEEPSEEK_BASE_URL
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY
-    const model = import.meta.env.VITE_DEEPSEEK_MODEL || 'deepseek-v4.1-flash'
 
     try {
-      if (!baseUrl || !apiKey) throw new Error('missing env')
-      const res = await fetch(`${baseUrl}/chat/completions`, {
+      const { url, headers } = aiEndpoint()
+      const res = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
+        headers,
         body: JSON.stringify({
-          model,
+          model: AI_MODEL,
           messages: [
             { role: 'system', content: buildSystemPrompt(name || '景点', clue) },
             { role: 'user', content: question.trim() },
