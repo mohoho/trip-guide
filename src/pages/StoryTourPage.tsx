@@ -25,6 +25,8 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
   const entry = useMemo(() => storyEntryId(pkg), [pkg])
   const [currentId, setCurrentId] = useState<string | null>(entry)
   const [visited, setVisited] = useState<string[]>(() => (entry ? [entry] : []))
+  /** 开始遮罩：进来先不播报，点「开始」才算这一程的第一下（也顺手解开浏览器的自动播放限制） */
+  const [started, setStarted] = useState(false)
   const [mapReady, setMapReady] = useState(false)
   const [mapError, setMapError] = useState('')
   const [moving, setMoving] = useState(false)
@@ -173,8 +175,9 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
     }
   }
 
-  /** 进入一个节点就播报该节点情节；走动过程中不打断 */
+  /** 点「开始」后进入一个节点就播报该节点情节；走动过程中不打断 */
   useEffect(() => {
+    if (!started) return
     const node = pkg.spots.find((s) => s.id === currentId)
     narrateCancelRef.current?.()
     narrateCancelRef.current = speakOnce({
@@ -183,7 +186,7 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
       text: node?.slides[0]?.narration || '',
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentId, speakToken, pkg])
+  }, [started, currentId, speakToken, pkg])
 
   useEffect(
     () => () => {
@@ -246,7 +249,32 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
         </div>
       )}
 
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-14 items-center justify-between gap-3 px-3">
+      {/* 开始遮罩：点「开始」（或任意处）才进入入口节点，返回与问线索仍可用 */}
+      {!started && (
+        <div
+          className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
+          role="dialog"
+          aria-label="开始故事导览"
+          onClick={() => setStarted(true)}
+        >
+          <div
+            className="mx-4 w-full max-w-sm rounded-2xl border border-black/5 bg-white px-6 py-7 text-center shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-xs text-[#9ca3af]">入口</p>
+            <p className="mt-1.5 text-lg font-medium text-[#111827]">{current.name}</p>
+            <button
+              type="button"
+              onClick={() => setStarted(true)}
+              className="mt-5 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#3b82f6] px-6 py-2.5 text-sm text-white hover:bg-[#2563eb]"
+            >
+              开始
+            </button>
+          </div>
+        </div>
+      )}
+
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-50 flex h-14 items-center justify-between gap-3 px-3">
         <div className="pointer-events-auto flex min-w-0 items-center gap-2 rounded-full border border-black/5 bg-white/95 py-1.5 pl-2.5 pr-3.5 shadow-sm backdrop-blur-md">
           <Link
             to="/"
@@ -378,14 +406,14 @@ export function StoryTourPage({ pkg }: { pkg: PublishedAttraction }) {
         )}
 
         {walkedTrace.length > 0 && (
-          <p className="flex items-start gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[11px] leading-relaxed text-[#6b7280] shadow-sm backdrop-blur-md">
+          <p className="flex items-start gap-1.5 rounded-xl bg-white/90 px-3 py-1.5 text-[11px] leading-relaxed text-[#6b7280] shadow-sm backdrop-blur-md">
             <Footprints size={12} className="mt-0.5 shrink-0" />
             <span className="min-w-0">已走：{walkedTrace.join(' → ')}</span>
           </p>
         )}
 
         {freeRoam && (
-          <p className="rounded-full bg-white/90 px-3 py-1.5 text-[11px] text-[#6b7280] shadow-sm backdrop-blur-md">
+          <p className="rounded-xl bg-white/90 px-3 py-1.5 text-[11px] text-[#6b7280] shadow-sm backdrop-blur-md">
             点击地图移动 · 自由漫游不受路线限制
           </p>
         )}

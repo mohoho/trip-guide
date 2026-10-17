@@ -277,10 +277,7 @@ export function PublishListPage() {
 
         {trashed.length > 0 && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-[#6b7280]">已删除</h3>
-              <span className="text-xs text-[#9ca3af]">文件还在 .trash\spots，恢复就是搬回来</span>
-            </div>
+            <h3 className="text-sm font-medium text-[#6b7280]">已删除</h3>
             {trashed.map((entry) => (
               <div
                 key={entry.folder}

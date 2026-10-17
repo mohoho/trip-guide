@@ -54,8 +54,9 @@ export function storyEndingLabel(pkg: StoryCarrier, spotId: string): string {
 }
 
 /**
- * 概览用的分支摘要：一个分叉点一行（`猴山 → 新狼馆 / 本土物种保育区 / 细尾獴馆`），
- * 末行收结局。没有 story、或一处分叉都没有（全靠数组顺序接）时返回空数组，
+ * 概览用的分支摘要：先一行入口（入口本身就是分叉点时并进那一行），
+ * 一个分叉点一行（`猴山 → 新狼馆 / 本土物种保育区`），末行收结局。
+ * 没有 story、或一处分叉都没有（全靠数组顺序接）时返回空数组，
  * 调用方回落到那条线性链条 —— 那本来就是线性故事的真实形态。
  */
 export function storyBranchOutline(pkg: StoryCarrier): string[] {
@@ -64,18 +65,22 @@ export function storyBranchOutline(pkg: StoryCarrier): string[] {
   const nameOf = (id: string) => pkg.spots.find((s) => s.id === id)?.name || id
 
   const branches: string[] = []
+  let entryHasBranch = false
   for (const spot of pkg.spots) {
     const choices = storyNextChoices(pkg, spot.id)
     if (choices.length < 2) continue
+    if (spot.id === entry) entryHasBranch = true
     const head = spot.id === entry ? `入口 ${spot.name}` : spot.name
     branches.push(`${head} → ${choices.map((c) => nameOf(c.to)).join(' / ')}`)
   }
   if (branches.length === 0) return []
 
   const endings = pkg.spots.filter((s) => storyNextChoices(pkg, s.id).length === 0)
-  return endings.length > 0
-    ? [...branches, `结局 ${endings.map((s) => s.name).join('、')}`]
-    : branches
+  return [
+    ...(entryHasBranch ? [] : [`入口 ${nameOf(entry)}`]),
+    ...branches,
+    ...(endings.length > 0 ? [`结局 ${endings.map((s) => s.name).join('、')}`] : []),
+  ]
 }
 
 export interface StoryIssue {
