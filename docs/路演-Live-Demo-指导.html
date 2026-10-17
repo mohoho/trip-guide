@@ -269,3 +269,399 @@
         <li>❌ 不要说「两种模式随便切」——数据结构上可以，但<strong>故事包需要额外连分支、写选项</strong>，不是一键切换。</li>
       </ul>
     </section>
+
+    <section id="s3" class="anchor">
+      <h2><span class="sec-n">03</span>演示素材与准备</h2>
+      <p class="sub">Live Demo 的成败，80% 在开演前就决定了。</p>
+
+      <h3>3.1 三个演示对象</h3>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>用途</th><th>对象</th><th>为什么是它</th><th>演示里怎么用</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tag ck">打卡</span> 互动体验</td>
+            <td>豫园 <code>yuyuan</code></td>
+            <td>江南园林、节点少、走完快；有真实路网可走，适合展示「顺序引导 + 到站讲解」。</td>
+            <td>点「自动」→ 开始 → 讲解 → 自动走下一站（约 40 秒）</td>
+          </tr>
+          <tr>
+            <td><span class="tag st">故事</span> 互动体验</td>
+            <td>红山动物园 <code>attr-mvbsg4kw</code><br>故事《黑神话悟空》</td>
+            <td>11 个节点、入口猴山三岔、2 个结局；已有 AI 生成的暗黑国风配图。戏剧性最强。</td>
+            <td>点开始 → 迷雾地图 → 选 1–2 个路口 → 展示结局结算（约 50 秒）</td>
+          </tr>
+          <tr>
+            <td>生成平台演示</td>
+            <td>上面两个包各自的草稿</td>
+            <td>打开内容创作页，展示两套模板长得完全不同（打卡两张卡 / 故事四张卡 + 结构图）</td>
+            <td>只讲结构，不现场改（约 30–40 秒/个）</td>
+          </tr>
+          <tr>
+            <td>「从头生成」</td>
+            <td>一个<strong>干净起点</strong>草稿</td>
+            <td>名称 / 城市 / 检索结果都已就绪，但节点与文案为空——现场跑一遍流水线</td>
+            <td>见 <a href="#s6">06 节</a>，这是全场最容易翻车的一段</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="callout warn">
+        <span class="h">关于演示顺序里的一处笔误</span>
+        <code>ppt-prompt.md</code> 里两段都写了「最后快速从头生成一次<strong>豫园</strong>」。本指导按<strong>「第一轮打卡＝豫园、第二轮故事＝红山动物园」</strong>来编排——因为故事模式的模板必须要有分叉与结局，豫园那个包是纯打卡结构，用它演示故事模板会当场露馅。<br>
+        <strong>如果你的本意是「同一个景点，用两种模式演示」，也能做</strong>（两种模式共用同一份节点数据），但需要提前给豫园连好分支——见 3.4 的备选方案。
+      </div>
+
+      <h3>3.2 演示前一天必须做完</h3>
+      <ul class="checklist">
+        <li>起本地服务（<code>npm run dev</code>，默认 5173），<strong>全程 localhost 演示</strong>，不依赖外网部署。</li>
+        <li>确认 <code>.env</code>：<code>VITE_DEEPSEEK_*</code>、<code>VITE_AMAP_KEY</code>、<code>VITE_AMAP_SECURITY_CODE</code> 全部有效。</li>
+        <li>把「从头生成」那条路<strong>完整预跑至少两遍</strong>，确认：检索秒回、节点生成正确、AI 有响应。</li>
+        <li>预跑一份「已经生成好」的结果另存为草稿，作为 AI 超时时的切换目标。</li>
+        <li>录一段 3 分钟实机走查（故事模式 + 后台生成），本地文件 + 云盘各一份。</li>
+        <li>准备离线自包含包（图片内联）一份，作为断网兜底。</li>
+        <li>浏览器：Chrome/Edge，1920×1080，缩放 100%，关通知、关 DevTools、把鼠标指针调大。</li>
+        <li>标签页按演示顺序预开：<code>/tour/yuyuan</code> → <code>/publish/&lt;豫园草稿&gt;/content</code> → 新建页 → <code>/tour/attr-mvbsg4kw</code> → <code>/publish/attr-mvbsg4kw/content</code> → 新建页。</li>
+        <li>提前点一次「开始」遮罩，确认中文语音能响（浏览器要求先有用户手势）。</li>
+        <li>确认外放音量；如果会场嘈杂，准备好「不看语音也能讲」的版本（讲解文字本来就在卡片上）。</li>
+      </ul>
+
+      <h3>3.3 已知限制（心里有数，别踩）</h3>
+      <ul>
+        <li>地图安全密钥是<strong>明文</strong>配置，只适合演示；上线要改代理转发。被问「安全性」时主动说这条，是加分项。</li>
+        <li>高德检索 <code>citylimit: false</code>，城市填错会命中外地同名景点——演示包已固定，不受影响。</li>
+        <li>节点配图是外部图像工具生成后压到 800×450（约 30–43KB/张），<strong>不是实时生成</strong>，别声称「现场生成配图」。</li>
+        <li>AI 生成是<strong>分段串行</strong>的：N 个节点就是 1+N 次请求（故事模式勾上结构再加 1 次）。11 个节点的完整生成不可能在 60 秒内跑完——这正是 06 节要解决的问题。</li>
+      </ul>
+
+      <h3>3.4 备选方案：同一个景点演示两种模式</h3>
+      <p>如果评委会问「同一个地方能不能两种玩法」，你可以在红山动物园上回答（它是故事包，节点数据与打卡包同构）：</p>
+      <ul>
+        <li>把它的 <code>mode</code> 临时改成 <code>checkin</code>（或复制一份草稿），前台就会渲染成<strong>打卡页</strong>——11 个节点按数组顺序走，出现进度条与路线清单。</li>
+        <li>反过来，给豫园连几条分支、写上选项文案，它也能变成故事包。</li>
+        <li><strong>但不要在现场做这个切换</strong>（要改文件/草稿）。把它当口头答案，或者提前做好一份对照包放在标签页里。</li>
+      </ul>
+    </section>
+
+    <section id="s4" class="anchor">
+      <h2><span class="sec-n">04</span>7 分钟演讲稿（可直接照念）</h2>
+      <p class="sub">结构＝<strong>30 秒定位 + 两轮各三段（共 4 分 50 秒）+ 40 秒平台收束 + 60 秒合作与收尾</strong>。</p>
+
+      <ol class="timeline">
+
+        <li>
+          <div class="trow"><span class="tt">开场 · 定位</span><span class="tag time">0:00 – 0:30</span></div>
+          <p class="td">目标：30 秒把「引擎 + 平台」两层立住，然后立刻进入演示。</p>
+          <div class="quote">
+            <span class="say">口播</span>
+            <p>「大家好，这是<strong>程导览</strong>——一个<strong>景点内的互动引擎</strong>。」</p>
+            <p>「它同时是给合作伙伴的一套<strong>互动流程 AI 辅助创作平台</strong>：内容由伙伴自己生产，我们提供生产能力。」</p>
+            <p>「目前支持两种互动模式——<strong>打卡模式</strong>和<strong>故事模式</strong>，而且<strong>每个模式都有各自的创作模板</strong>。接下来我用两个真实案例，各走一遍。」</p>
+          </div>
+          <p class="td">🎬 切到 <code>/tour/yuyuan</code>。</p>
+        </li>
+
+        <li>
+          <div class="trow"><span class="tt">第一轮 · 打卡模式（豫园）</span><span class="tag time">0:30 – 2:30</span></div>
+          <p class="td">三段式：<strong>① 互动体验 → ② 打开生成平台 → ③ 从头生成一次</strong>。</p>
+
+          <h4>① 互动体验（约 40 秒）</h4>
+          <div class="quote">
+            <span class="say">口播（配合操作）</span>
+            <p>「这是上海豫园，<span class="tag ck">打卡</span> 模式。游客打开就是一张真实地图，左边是游览路线。」</p>
+            <p>「我可以点地图走过去，靠近节点自动讲解；也可以点『自动』——」<span class="td">（点自动 → 开始）</span>「——它按顺序带着我走，到站就讲，讲完自动去下一站，顶部是进度条。」</p>
+            <p>「这就是打卡模式：<strong>景区内的沉浸式路线引导加打卡点讲解，走遍每一个节点。</strong>」</p>
+          </div>
+
+          <h4>② 打开生成平台，看看它的模板（约 30 秒）</h4>
+          <div class="quote">
+            <span class="say">口播（配合操作）</span>
+            <p>「这些内容不是我们手写的。切到生成平台，这就是<strong>打卡模式的创作模板</strong>——只有两张卡：<strong>景点简介</strong>和<strong>节点内容</strong>。每个节点写标题、要点和一段口播稿。」</p>
+            <p>「注意，它跟故事模式长得完全不一样——待会儿你会看到。」</p>
+          </div>
+
+          <h4>③ 从头生成一次（约 50 秒）</h4>
+          <div class="quote">
+            <span class="say">口播（配合操作）</span>
+            <p>「现在我从头做一遍。新建一个景点，输入名字和城市，点检索——高德把关景区和周边地点都找出来了，我勾几个当节点。」</p>
+            <p>「下一步，节点自动生成好，坐标不对就拖一下。」</p>
+            <p>「进内容创作，点『AI 生成讲解』——」<span class="td">（点下去）</span>「<strong>它是分段跑的：先写景点简介，再一站一站写讲解。</strong>每一段写完立刻存下来，所以中途刷新不会丢。」</p>
+            <p>「跑完点预览——这就是刚才那个前台页面；点发布，一条导览就上线了。<strong>整个过程我们没写一行文案。</strong>」</p>
+          </div>
+          <p class="td">⏱️ 不要等全部生成完，见 <a href="#s6">06 节</a> 的「三段式降级」。</p>
+        </li>
+
+        <li class="story">
+          <div class="trow"><span class="tt">第二轮 · 故事模式（红山动物园）</span><span class="tag time">2:30 – 5:20</span></div>
+          <p class="td">同样的三段式，但每一段都换成故事形态——这一轮是全场的高潮。</p>
+
+          <h4>① 互动体验（约 50 秒）</h4>
+          <p class="td">🎬 切到 <code>/tour/attr-mvbsg4kw</code>。</p>
+          <div class="quote">
+            <span class="say">口播（配合操作）</span>
+            <p>「同一个引擎，换一个玩法。这是南京红山动物园，故事《黑神话悟空》，<span class="tag st">故事</span> 模式。」</p>
+            <p>「进来先是一块开始遮罩——点开始。」<span class="td">（点开始）</span></p>
+            <p>「<strong>请注意地图：现在上面只有一个点。</strong>这是故事模式的第一件事——地图是迷雾，故事不剧透。你只能看见自己站在哪、下一步能去哪。」</p>
+            <p>「左下角是这一站能走的路。我点『往狼嚎那边摸』——」<span class="td">（点）</span>「——小人沿高德真实路网走过去，到了新一站，讲解自动播报、右上角情节换新。」</p>
+            <p>「注意：<strong>哪怕只有一条路，也要你亲手点下一步</strong>；走过的地方不会再出现——选择不可逆。这就是『多条路线探索』的手感。」</p>
+            <p>「走到结局，讲完会压一块结算：结局标题，加上这一趟的足迹。」</p>
+          </div>
+
+          <h4>② 生成平台 · 故事模板（约 40 秒）</h4>
+          <p class="td">🎬 切到 <code>/publish/attr-mvbsg4kw/content</code>。</p>
+          <div class="quote">
+            <span class="say">口播（配合操作）</span>
+            <p>「切到生成平台。这就是故事模式的创作模板——<strong>四张卡，和打卡模式完全不同：故事结构、前情提要、节点内容、这个节点的去向。</strong>」</p>
+            <p>「最上面这张是<strong>故事结构图</strong>：入口在最左边，这里是分叉，右边虚线的收口是结局。<strong>点节点就能跳过去编辑。</strong>」</p>
+            <p>「打卡模板只要写讲解；故事模板还要给<strong>每个去向写一句选项文案</strong>，给结局写标题。这就是『每个模式各自的模板』。」</p>
+          </div>
+
+          <h4>③ 从头生成一次（约 80 秒）</h4>
+          <div class="quote">
+            <span class="say">口播（配合操作）</span>
+            <p>「同样从头来一遍。名字、城市、检索、勾节点、拖坐标——」</p>
+            <p>「进内容创作，这次先写一句<strong>创作方向</strong>，比如『以寻找走失的同伴为主线，语气温柔』。然后点『AI 生成内容』。」</p>
+            <p>「——<strong>它是按结构、开场、逐站三段来跑的</strong>。先设计走向，再写故事名和前情提要，最后一段一段写情节和路口选项。」</p>
+            <p>「这里有个关键设计：<strong>每一站写作时，会把上一站刚写好的旁白喂进去</strong>，所以情节是接得住的，不是每站各写各的。」</p>
+            <p>「如果勾上『修改故事结构』，AI 还能<strong>把整张去向表重排一遍</strong>——但<strong>节点和坐标一个都不会动</strong>。」</p>
+            <p>「停下来看这张结构图：入口、分叉、结局，都是它写出来的。点预览、点发布——<strong>一个可以边走边选的故事就上线了。</strong>」</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="trow"><span class="tt">平台收束 · 两种模式、两套模板、一个引擎</span><span class="tag time">5:20 – 6:00</span></div>
+          <p class="td">目标：把两轮演示收成一句话结构。</p>
+          <div class="quote">
+            <span class="say">口播</span>
+            <p>「刚才两轮，其实是同一个东西。」</p>
+            <p>「<strong>一个引擎</strong>——地图、真实路网、语音播报、AI 问答，都是同一套。」</p>
+            <p>「<strong>两种模式</strong>——打卡是清单，走遍每个节点；故事是路径，多条路线自己探索。」</p>
+            <p>「<strong>两套模板</strong>——选打卡就给你清单式的编辑页，选故事就给你结构图加选项文案的编辑页。伙伴不用改代码，只用选模式、填内容。」</p>
+          </div>
+        </li>
+
+        <li>
+          <div class="trow"><span class="tt">合作模式 · 价值 · 收尾</span><span class="tag time">6:00 – 7:00</span></div>
+          <p class="td">目标：说清卖给谁、怎么卖、为什么现在做。</p>
+          <div class="quote">
+            <span class="say">口播</span>
+            <p>「所以我们的商业模式很清楚：<strong>我们不做面向游客的 App，我们把能力交给合作伙伴。</strong>」</p>
+            <p>「景区和文旅局要的是两件事：<strong>让游客待得更久</strong>，以及<strong>用得起、做得快</strong>。过去做一套导览要找文案、配音、做小程序、雇人踩点；现在我们把它压成一条流水线——<strong>选模式、填几个点、点一次 AI，五分钟上线。</strong>」</p>
+            <p>「而两种模式共用同一份数据、同一个引擎，所以伙伴做了一次投入，两种玩法都能用。」</p>
+            <p>「<strong>程导览——景点内的互动引擎，给合作伙伴的 AI 创作平台。谢谢。</strong>」</p>
+          </div>
+        </li>
+
+      </ol>
+
+      <div class="callout tip">
+        <span class="h">时间不够时的自动砍法（按顺序删）</span>
+        ① 第一轮打卡模式的「③ 从头生成」→ 改成只讲两句 → ② 平台收束压到 20 秒 → ③ 第一轮「② 生成平台」压到 15 秒。<br>
+        <strong>永远不要砍</strong>：开场 30 秒定位、故事模式的互动体验、故事模式的结构图。这三样是评委记住你的全部。
+      </div>
+    </section>
+
+    <section id="s5" class="anchor">
+      <h2><span class="sec-n">05</span>分镜表（两轮六段，打印放旁边）</h2>
+      <p class="sub">操作手照这张表走。每一行都有「兜底」——出问题时切到哪里，不用现场想。</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>时间</th><th>屏幕 / URL</th><th>动作</th><th>口播关键词</th><th>兜底</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tag time">0:00</span></td>
+            <td><code>/tour/yuyuan</code>（已打开）</td>
+            <td>不点，先讲定位</td>
+            <td>互动引擎 / AI 创作平台 / 两种模式两套模板</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">0:30</span></td>
+            <td>豫园 · 打卡页</td>
+            <td>点「自动」→ 点「开始」</td>
+            <td>「按顺序带着我走，到站就讲」</td>
+            <td>自动不动就直接点地图上的节点，说「靠近就讲」</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">1:00</span></td>
+            <td>切到 <code>/publish/&lt;豫园草稿&gt;/content</code></td>
+            <td>指两张卡：景点简介 / 节点内容</td>
+            <td>「这就是打卡模式的创作模板」</td>
+            <td>只讲卡片，不点任何按钮</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">1:30</span></td>
+            <td>新建景点 → 阶段一</td>
+            <td>输名字城市 → 点检索 → 勾 3 个候选</td>
+            <td>「高德把关景区和周边地点都找出来了」</td>
+            <td>检索慢就切预跑好的下一屏</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">1:55</span></td>
+            <td>阶段二 · 地图选点</td>
+            <td>点「下一步」→ 拖一个标记</td>
+            <td>「节点自动生成好，坐标不对拖一下」</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">2:05</span></td>
+            <td>内容创作 → 点「AI 生成讲解」</td>
+            <td>点下去，展示进度条</td>
+            <td>「分段跑，每段写完立刻存」</td>
+            <td>超 15 秒 → 说「我们已经预跑完一份」，切结果</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">2:20</span></td>
+            <td>预览页 → 发布</td>
+            <td>点预览 → 点发布 →「去前台看」</td>
+            <td>「预览就是刚才那个前台」</td>
+            <td>不真发也可，说「点了就写进发布包」</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">2:30</span></td>
+            <td>切到 <code>/tour/attr-mvbsg4kw</code></td>
+            <td>等开始遮罩</td>
+            <td>「同一个引擎，换一个玩法」</td>
+            <td>包加载失败 → 切录屏</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">2:40</span></td>
+            <td>开始遮罩</td>
+            <td><strong>点「开始」</strong>（解锁语音）</td>
+            <td>「地图是迷雾，故事不剧透」</td>
+            <td>语音不响 → 改口「文字在这张卡上」继续</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">3:00</span></td>
+            <td>故事页 · 左下角选项</td>
+            <td>点第 1 个选项走一步，再点一步</td>
+            <td>「每条路都要自己选，走过不回头」</td>
+            <td>不等动画，直接讲下一句</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">3:20</span></td>
+            <td>结局结算（如时间允许）</td>
+            <td>走到结局；讲完弹结算</td>
+            <td>「结局标题 + 这一趟的足迹」</td>
+            <td>不等口播，直接指左下角结局卡</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">3:30</span></td>
+            <td><code>/publish/attr-mvbsg4kw/content</code></td>
+            <td>指四张卡 + 结构图（点一个节点示范可点）</td>
+            <td>「这就是故事模式的创作模板」</td>
+            <td>只点结构图，不碰文案</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">4:10</span></td>
+            <td>新建/复用草稿 · 阶段一</td>
+            <td>输名字城市 → 检索（结果已缓存）</td>
+            <td>「同样从头来一遍」</td>
+            <td>跳过检索，直接说「结果已经在了」</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">4:30</span></td>
+            <td>阶段二 → 内容创作</td>
+            <td>写一句创作方向 → 点「AI 生成内容」</td>
+            <td>「先写一句创作方向」</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">4:45</span></td>
+            <td>生成中 · 进度条</td>
+            <td>指着「3/4」与 toast</td>
+            <td>「结构→开场→逐站，上一站喂下一站」</td>
+            <td>超 15 秒 → 切预跑结果，继续讲</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">5:05</span></td>
+            <td>故事结构图</td>
+            <td>指入口 / 分叉 / 结局</td>
+            <td>「这张图是它写出来的」</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">5:15</span></td>
+            <td>预览 → 发布</td>
+            <td>点发布</td>
+            <td>「一个可以边走边选的故事就上线了」</td>
+            <td>不真发也可</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">5:20</span></td>
+            <td>回首页 / PPT</td>
+            <td>收束</td>
+            <td>一个引擎 / 两种模式 / 两套模板</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><span class="tag time">6:00</span></td>
+            <td>PPT 或首页</td>
+            <td>收尾</td>
+            <td>合作模式 + 收尾金句</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="callout ok">
+        <span class="h">操作手的三个纪律</span>
+        <strong>1）不要抢话。</strong>主讲说到关键词你再点，动作永远跟着话。<br>
+        <strong>2）每个页面停留不超过 40 秒。</strong>超过就切下一个——节奏比完整更重要。<br>
+        <strong>3）兜底只有一条：切预跑结果 / 切录屏。</strong>想好了就不慌。
+      </div>
+    </section>
+
+    <section id="s6" class="anchor">
+      <h2><span class="sec-n">06</span>「从头生成」怎么演示（全场最容易翻车的一段）</h2>
+      <p class="sub">这一段的矛盾是：<strong>它是全片最有说服力的部分，也是唯一一个你无法控制耗时的部分。</strong></p>
+
+      <h3>6.1 先说清它的真实耗时</h3>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>模式</th><th>请求次数</th><th>大致耗时</th><th>60 秒能跑完吗</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tag ck">打卡</span> 4 个节点</td>
+            <td>1（简介）+ 4（节点）= 5 次</td>
+            <td>约 15–40 秒（视网络）</td>
+            <td>勉强，需要节点少</td>
+          </tr>
+          <tr>
+            <td><span class="tag st">故事</span> 11 个节点</td>
+            <td>1（结构）+ 1（开场）+ 11（节点）= 13 次</td>
+            <td>约 40–120 秒</td>
+            <td><strong>跑不完</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>6.2 推荐做法：三段式降级（诚实且可控）</h3>
+      <ol>
+        <li><strong>现场真的跑前两段。</strong>让它真的执行 10–20 秒，看着进度条从「1/4」走到「2/4」——这是真的，不是演的。</li>
+        <li><strong>把等待变成讲解。</strong>等的时候你正好在解释：「它是一段一段跑的，每段写完立刻落盘，所以某一段失败也不会覆盖你已经写好的内容。」——<strong>等待不是空白，等待是最好的讲解时机。</strong></li>
+        <li><strong>到 15 秒还没跑到第三段，就切预跑结果。</strong>台词：「剩下的段我们已经预跑好了，直接看结果。」然后展示结构图 / 预览 / 发布。不解释、不道歉、不停顿。</li>
+      </ol>
+
+      <h3>6.3 备选做法（如果要「看起来真的从头跑完」）</h3>
+      <ul>
+        <li><strong>缩小案例。</strong>现场新建一个只有 <strong>3 个节点</strong>的小景点（比如「XX 公园」），1+3=4 次请求，能在 30 秒内跑完。这比等 11 个节点体面得多。</li>
+        <li><strong>只勾一个部分。</strong>故事模式点「AI 生成内容」时会弹一个小面板让你<strong>逐项勾选写哪些部分</strong>（故事名 / 前情提要 / 情节 / 选项文案 / 结局标题 / 修改结构）。现场只勾「前情提要」，请求数就变成 1 次，秒回，然后说「其余部分我们用预跑的结果展示」。</li>
+        <li><strong>预置检索缓存。</strong>把「检索景区」这一步提前跑过，让高德结果在草稿里——现场点检索是秒回的，不会卡在等网络。</li>
+      </ul>
+
+      <div class="callout danger">
+        <span class="h">三个绝对不要做的事</span>
+        ❌ 不要在现场硬等 60 秒以上（评委的注意力只有几分钟）。<br>
+        ❌ 不要说「我们平时很快，只是这里网络不好」（听起来像找借口，而且暗示线上也这样）。<br>
+        ❌ 不要跳过「预览 → 发布」这最后一跳——它是「伙伴能自己上线」这个论点的唯一证据。
+      </div>
+
+      <div class="callout tip">
+        <span class="h">一句可以提前打的预防针</span>
+        在开始生成前说一句：「<strong>因为它是分段的，我会只跑前面几段给大家看节奏，剩下的用预跑结果。</strong>」——提前说清楚，切走的时候就不会显得像翻车。
+      </div>
+    </section>
