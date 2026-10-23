@@ -1,0 +1,135 @@
+src/components/SiteHeader.tsx
+  s_552db282d1a408::t_261dc1266ff97c 14
+  s_552db282d1a408::t_a528a674665475 59,61
+  s_552db282d1a408::t_d5427f26e0ec68 11,18,32,40-41,45-46,52-57
+src/components/ModeTag.tsx
+  s_552db282d1a408::t_d5427f26e0ec68 4,12-13
+src/components/SpotContentPanel.tsx
+  s_552db282d1a408::t_261dc1266ff97c 23,27,31,35,39-40,45,54,74,78,82,87,91,96
+src/pages/TourRoute.tsx
+  s_552db282d1a408::t_261dc1266ff97c 41,43,52
+server/index.mjs
+  s_552db282d1a408::t_5acf9663da9b62 1-58
+src/components/SiteFooter.tsx
+  s_552db282d1a408::t_d5427f26e0ec68 3-9
+src/components/PublishSpotMap.tsx
+  s_552db282d1a408::t_261dc1266ff97c 1,71,76,335,455
+src/lib/exportTarget.ts
+  s_552db282d1a408::t_308a802b54bda1 1-2,9,12-13,22-26,30-32,35-36,39-40,42,48
+src/pages/content/ContentCheckinPage.tsx
+  s_552db282d1a408::t_20d4601baf17ec 7,177-178,195,216-218,220
+  s_552db282d1a408::t_261dc1266ff97c 168,182,190,200,208,221,231,234,240,254,266,273,285
+  s_552db282d1a408::t_dcc8fd7b4bb45e 229
+src/pages/HomePage.tsx
+  s_552db282d1a408::t_57a41fc77e1f35 1,3,10-14,20,23,27-30,32,36-37,41-43,46,48-70,72-80,82,84-104,106-108,110-115
+src/pages/content/PublishContentPage.tsx
+  s_552db282d1a408::t_261dc1266ff97c 42
+package.json
+  s_552db282d1a408::t_2821de8db0f781 10-12
+src/components/TourProgressBar.tsx
+  s_552db282d1a408::t_261dc1266ff97c 43,46,54
+src/components/PublishAccess.tsx
+  s_552db282d1a408::t_834df8cee6afc4 41
+  s_552db282d1a408::t_e5487181bd721c 1-2,4-40,42-57
+  s_552db282d1a408::t_f6330efcf76e81 3
+src/pages/PublishEditorPage.tsx
+  s_552db282d1a408::t_20d4601baf17ec 17,444-445,533,665-666,668-669,913
+  s_552db282d1a408::t_261dc1266ff97c 1,78,80,85,88,95,101,110-111,132,408,447,466,471,480,494,503,514,521,539,545,550,555,563,567-568,581-582,589,599-600,610,617,621,630,670,680-681,690,700,706-707,712,726,745,761,767,773,784,792,799,813,821,828,835,852,856,872,887-888,891,901,906,936,944
+public/favicon.svg
+  s_552db282d1a408::t_261dc1266ff97c 2,6
+src/lib/draftStore.ts
+  s_552db282d1a408::t_2821de8db0f781 275-277
+  s_552db282d1a408::t_f6330efcf76e81 255,278,377-378,386,391,396,399-404
+src/components/SpotRelativeMap.tsx
+  s_552db282d1a408::t_261dc1266ff97c 36-37,155,168
+src/components/StoryGraphView.tsx
+  s_552db282d1a408::t_261dc1266ff97c 85-86,95
+nginx.conf
+  s_552db282d1a408::t_63ca99a4381ce4 7-16,26-27
+Dockerfile
+  s_552db282d1a408::t_63ca99a4381ce4 1-13
+src/index.css
+  s_552db282d1a408::t_f640f959dceb02 5-10,26-27,31-108,196-245,277,280
+  s_552db282d1a408::t_f3ed9344a688df 129
+  s_552db282d1a408::t_dcc8fd7b4bb45e 109-128,130-195
+src/pages/content/ContentStoryPage.tsx
+  s_552db282d1a408::t_dcc8fd7b4bb45e 489
+  s_552db282d1a408::t_20d4601baf17ec 8,361-362,388,476-478,480
+  s_552db282d1a408::t_261dc1266ff97c 340,366,379,382,396,406,416,423,445,457,468,481,491,494,500,517,531,544,551,566,574,582,590,598,600-601,607,613,618,622,626,633-634,639,646-647,659,680,687,697
+src/components/GenProgressToast.tsx
+  s_552db282d1a408::t_261dc1266ff97c 18
+docs/design.md
+  s_552db282d1a408::t_834df8cee6afc4 3-4
+src/components/AskAiPanel.tsx
+  s_552db282d1a408::t_261dc1266ff97c 92,94,100-101,110,116,126
+src/components/CityRegionSelect.tsx
+  s_552db282d1a408::t_261dc1266ff97c 16
+src/pages/TourPage.tsx
+  s_552db282d1a408::t_261dc1266ff97c 1,581,590,594,603,608,621,630,669,688,692,708,718,723,731,744,760,784,795,813,822,829,835,844,854,856,862-863,872,877,887
+  s_552db282d1a408::t_20d4601baf17ec 576-577,705,758
+server/publishing.d.mts
+  s_552db282d1a408::t_57b1b030ab52cf 1-18
+docker-compose.yml
+  s_552db282d1a408::t_63ca99a4381ce4 9-10,13-20
+server/publishing.test.mjs
+  s_552db282d1a408::t_a619c378727714 69
+  s_552db282d1a408::t_57b1b030ab52cf 1-68,70-188
+src/pages/PublishListPage.tsx
+  s_552db282d1a408::t_d5427f26e0ec68 176-179
+  s_552db282d1a408::t_261dc1266ff97c 191,194,199-200,216,232,234,236,250,266,283,291,293,295,301,317
+  s_552db282d1a408::t_20d4601baf17ec 172,210
+  s_552db282d1a408::t_f6330efcf76e81 7,149,181
+  s_552db282d1a408::t_a619c378727714 267
+src/components/VisitorAvatarPicker.tsx
+  s_552db282d1a408::t_261dc1266ff97c 24,31,37
+.env.example
+  s_552db282d1a408::t_2821de8db0f781 6-13
+README.md
+  s_552db282d1a408::t_2eb4b19af8f05a 1,3-27,30-33,36-42,44,46-54,57,59-71,74-267
+  s_552db282d1a408::t_95d4c54b2a103f 28-29,34-35,43,45
+docs/note/06-腾讯云部署与发布后端.md
+  s_552db282d1a408::t_c398186b07c16f 3-4
+src/components/AmapLiveMap.tsx
+  s_552db282d1a408::t_261dc1266ff97c 1,36,310
+docs/note/07-CentOS-Docker部署.md
+  s_552db282d1a408::t_c398186b07c16f 3-4
+.gitignore
+  s_552db282d1a408::t_2821de8db0f781 30-33
+server/publishing.mjs
+  s_552db282d1a408::t_a619c378727714 268
+  s_552db282d1a408::t_2821de8db0f781 18,238-253
+  s_552db282d1a408::t_5acf9663da9b62 1-17,19-237,254-267,269-295
+src/lib/publishApi.ts
+  s_552db282d1a408::t_e5487181bd721c 1-41
+vite-plugin-export-to-display.ts
+  s_552db282d1a408::t_38e2149ae33adf 2-3,5,10-21
+src/pages/PublishPreviewPage.tsx
+  s_552db282d1a408::t_f6330efcf76e81 15,88,125-126
+  s_552db282d1a408::t_261dc1266ff97c 99,101,110,132,140,151,159
+  s_552db282d1a408::t_20d4601baf17ec 127-128
+.dockerignore
+  s_552db282d1a408::t_63ca99a4381ce4 1,15-16
+src/components/TourAutoGate.tsx
+  s_552db282d1a408::t_261dc1266ff97c 21-23,29
+src/pages/StoryTourPage.tsx
+  s_552db282d1a408::t_261dc1266ff97c 230,262,285,288,294,302,322-323,329,339,350,364,373,376,404,422,432,434,449,458,466,479,485,494,512,516,527,534
+  s_552db282d1a408::t_20d4601baf17ec 237,293,401
+src/components/StudioIntro.tsx
+  s_552db282d1a408::t_20d4601baf17ec 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "747a1402a717ed845e679022d90c2ac92fbf3881",
+  "prompts": {},
+  "sessions": {
+    "s_552db282d1a408": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1671d-9d98-77d0-89b3-f4998a28f657",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "qmruan <qmruan@trip.com>"
+    }
+  }
+}
