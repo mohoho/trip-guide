@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowDown,
@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { PublishSpotMap, type PublishMapApi } from '../components/PublishSpotMap'
 import { CityRegionSelect } from '../components/CityRegionSelect'
+import { StudioIntro } from '../components/StudioIntro'
 import { SpotRelativeMap } from '../components/SpotRelativeMap'
 import { buildMainPoiText, resolveAttractionScope } from '../lib/amapLocate'
 import {
@@ -74,30 +75,30 @@ function CandidateList({
   return (
     <div className="space-y-2 border-t border-black/5 pt-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-medium text-[#6b7280]">
+        <p className="text-xs font-medium text-[#72766a]">
           地点信息
-          <span className="ml-1 text-[#9ca3af] tabular-nums">
+          <span className="ml-1 text-[#7f8375] tabular-nums">
             {pickedCount}/{candidates.length}
           </span>
         </p>
         <div className="flex gap-2 text-[11px] shrink-0">
-          <button type="button" className="cursor-pointer text-[#3b82f6]" onClick={() => onSetAll(true)}>
+          <button type="button" className="cursor-pointer text-[#315442]" onClick={() => onSetAll(true)}>
             全选
           </button>
-          <button type="button" className="cursor-pointer text-[#9ca3af]" onClick={() => onSetAll(false)}>
+          <button type="button" className="cursor-pointer text-[#7f8375]" onClick={() => onSetAll(false)}>
             清空
           </button>
         </div>
       </div>
 
       {candidates.length === 0 ? (
-        <p className="text-[11px] text-[#9ca3af]">{emptyHint}</p>
+        <p className="text-[11px] text-[#7f8375]">{emptyHint}</p>
       ) : (
         <div className="max-h-64 space-y-0.5 overflow-y-auto">
           {candidates.map((c) => (
             <label
               key={c.name}
-              className="flex cursor-pointer items-start gap-2 rounded px-1 py-1 hover:bg-[#f9fafb]"
+              className="flex cursor-pointer items-start gap-2 rounded px-1 py-1 hover:bg-[#faf9f4]"
             >
               <input
                 type="checkbox"
@@ -106,8 +107,8 @@ function CandidateList({
                 className="mt-0.5"
               />
               <span className="min-w-0">
-                <span className="block truncate text-xs text-[#111827]">{c.name}</span>
-                <span className="block truncate text-[10px] text-[#6b7280]">
+                <span className="block truncate text-xs text-[#253c31]">{c.name}</span>
+                <span className="block truncate text-[10px] text-[#72766a]">
                   {[
                     c.address,
                     c.type?.split(';').pop(),
@@ -128,7 +129,7 @@ function CandidateList({
         type="button"
         onClick={onGenerate}
         disabled={pickedCount === 0}
-        className="w-full cursor-pointer rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs hover:bg-[#f3f4f6] disabled:opacity-45"
+        className="w-full cursor-pointer rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs hover:bg-[#efeee5] disabled:opacity-45"
       >
         {hasSpots ? '更新节点' : '用勾选的候选生成节点'}
       </button>
@@ -404,7 +405,7 @@ export function PublishEditorPage() {
 
   if (!draft) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f7f8fa] text-sm text-[#6b7280]">
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f6ef] text-sm text-[#72766a]">
         加载中…
       </div>
     )
@@ -440,10 +441,10 @@ export function PublishEditorPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#f7f8fa] text-[#111827]">
-      <header className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-5 h-14 bg-white border-b border-black/5">
+    <div className="studio-workspace h-screen flex flex-col bg-[#f8f6ef] text-[#253c31]">
+      <header className="studio-toolbar shrink-0 flex items-center justify-between gap-3 px-4 sm:px-5 h-14 bg-white border-b border-black/5">
         <div className="flex items-center gap-3 min-w-0">
-          <Link to="/publish" className="inline-flex items-center gap-1 text-sm text-[#6b7280] hover:text-[#111827]">
+          <Link to="/publish" className="inline-flex items-center gap-1 text-sm text-[#72766a] hover:text-[#253c31]">
             <ArrowLeft size={16} />
             返回
           </Link>
@@ -462,12 +463,12 @@ export function PublishEditorPage() {
           </span>
         </div>
 
-        <div className="hidden md:flex items-center gap-1 rounded-lg bg-[#f3f4f6] p-0.5">
+        <div className="hidden md:flex items-center gap-1 rounded-lg bg-[#efeee5] p-0.5">
           <button
             type="button"
             onClick={() => gotoStage(1)}
             className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-              stage === 1 ? 'bg-white text-[#111827] shadow-sm' : 'text-[#6b7280] hover:text-[#111827]'
+              stage === 1 ? 'bg-white text-[#253c31] shadow-sm' : 'text-[#72766a] hover:text-[#253c31]'
             }`}
           >
             1. 确定范围
@@ -476,7 +477,7 @@ export function PublishEditorPage() {
             type="button"
             onClick={() => void goStage2()}
             className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-              stage === 2 ? 'bg-white text-[#111827] shadow-sm' : 'text-[#6b7280] hover:text-[#111827]'
+              stage === 2 ? 'bg-white text-[#253c31] shadow-sm' : 'text-[#72766a] hover:text-[#253c31]'
             }`}
           >
             2. 地点与内容
@@ -490,7 +491,7 @@ export function PublishEditorPage() {
                 type="button"
                 onClick={() => void onResolveScope()}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm hover:bg-[#f3f4f6] disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm hover:bg-[#efeee5] disabled:opacity-50"
               >
                 <MapPin size={14} />
                 {resolving ? '检索中…' : '检索范围'}
@@ -499,7 +500,7 @@ export function PublishEditorPage() {
                 type="button"
                 onClick={() => void goStage2()}
                 disabled={busy}
-                className="inline-flex items-center gap-1 rounded-lg bg-[#3b82f6] text-white px-3.5 py-1.5 text-sm hover:bg-[#2563eb] disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-lg bg-[#315442] text-white px-3.5 py-1.5 text-sm hover:bg-[#243f32] disabled:opacity-50"
               >
                 下一步
                 <ArrowRight size={14} />
@@ -510,14 +511,14 @@ export function PublishEditorPage() {
               <button
                 type="button"
                 onClick={() => gotoStage(1)}
-                className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm hover:bg-[#f3f4f6]"
+                className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm hover:bg-[#efeee5]"
               >
                 上一步
               </button>
               <button
                 type="button"
                 onClick={() => navigate(`/publish/${draft.id}/preview?from=map`)}
-                className="rounded-lg bg-[#3b82f6] text-white px-3.5 py-1.5 text-sm hover:bg-[#2563eb]"
+                className="rounded-lg bg-[#315442] text-white px-3.5 py-1.5 text-sm hover:bg-[#243f32]"
               >
                 预览
               </button>
@@ -529,28 +530,29 @@ export function PublishEditorPage() {
       {stage === 1 ? (
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="mx-auto w-full max-w-[1400px] px-5 py-5 sm:px-8 sm:py-7">
+            <StudioIntro step={1} title="从一处心动的风景开始。" description="确定目的地，找到这段旅程的起点。" />
             <div className="grid gap-5 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start">
               {/* 左：基础信息 */}
               <section className="space-y-4 rounded-2xl border border-black/[0.06] bg-white p-5">
                 <div>
                   <h2 className="text-lg font-medium tracking-tight">确定旅游范围</h2>
-                  <p className="mt-1 text-sm leading-relaxed text-[#6b7280]">
+                  <p className="mt-1 text-sm leading-relaxed text-[#72766a]">
                     先写清景点与城市，再用高德确认景区位置与周边地点；下一步把这些地点交给 AI 生成漫游。
                   </p>
                 </div>
 
                 <label className="block">
-                  <span className="text-xs text-[#9ca3af]">景点名称</span>
+                  <span className="text-xs text-[#7f8375]">景点名称</span>
                   <input
                     value={draft.name}
                     onChange={(e) => updateDraft({ name: e.target.value, amapContext: '' })}
                     placeholder="如：豫园、长白山北坡"
-                    className="mt-1 w-full rounded-lg border border-black/8 bg-[#f9fafb] px-3 py-2.5 text-sm outline-none focus:border-[#3b82f6]/50 focus:bg-white"
+                    className="mt-1 w-full rounded-lg border border-black/8 bg-[#faf9f4] px-3 py-2.5 text-sm outline-none focus:border-[#315442]/50 focus:bg-white"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="text-xs text-[#9ca3af]">城市 / 区域</span>
+                  <span className="text-xs text-[#7f8375]">城市 / 区域</span>
                   <div className="mt-1">
                     <CityRegionSelect
                       value={draft.city || ''}
@@ -558,12 +560,12 @@ export function PublishEditorPage() {
                       disabled={busy}
                     />
                   </div>
-                  <p className="mt-1 text-[11px] text-[#9ca3af]">数据来自高德行政区查询（DistrictSearch）</p>
+                  <p className="mt-1 text-[11px] text-[#7f8375]">数据来自高德行政区查询（DistrictSearch）</p>
                 </label>
 
                 <div className="border-t border-black/5 pt-4">
-                  <span className="text-xs text-[#9ca3af]">漫游模式</span>
-                  <div className="mt-1 flex w-fit items-center gap-1 rounded-lg bg-[#f3f4f6] p-0.5">
+                  <span className="text-xs text-[#7f8375]">漫游模式</span>
+                  <div className="mt-1 flex w-fit items-center gap-1 rounded-lg bg-[#efeee5] p-0.5">
                     {(
                       [
                         { key: 'checkin', label: '打卡' },
@@ -576,15 +578,15 @@ export function PublishEditorPage() {
                         onClick={() => updateDraft({ mode: item.key })}
                         className={`cursor-pointer rounded-md px-3 py-1.5 text-sm transition-colors ${
                           (draft.mode || 'checkin') === item.key
-                            ? 'bg-white text-[#111827] shadow-sm'
-                            : 'text-[#6b7280] hover:text-[#111827]'
+                            ? 'bg-white text-[#253c31] shadow-sm'
+                            : 'text-[#72766a] hover:text-[#253c31]'
                         }`}
                       >
                         {item.label}
                       </button>
                     ))}
                   </div>
-                  <p className="mt-1 text-[11px] text-[#9ca3af]">
+                  <p className="mt-1 text-[11px] text-[#7f8375]">
                     {draft.mode === 'story'
                       ? '故事模式：节点之间自己连去向，前台由游客选路'
                       : '打卡模式：按列表顺序线性走完'}
@@ -594,8 +596,8 @@ export function PublishEditorPage() {
                 <div className="space-y-2 border-t border-black/5 pt-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium text-[#111827]">主景区</p>
-                      <p className="mt-0.5 text-[11px] text-[#9ca3af]">
+                      <p className="text-sm font-medium text-[#253c31]">主景区</p>
+                      <p className="mt-0.5 text-[11px] text-[#7f8375]">
                         {draft.amapContext
                           ? `坐标 ${draft.start.lng.toFixed(5)}, ${draft.start.lat.toFixed(5)}`
                           : '尚未检索'}
@@ -605,18 +607,18 @@ export function PublishEditorPage() {
                       type="button"
                       onClick={() => void onResolveScope()}
                       disabled={busy}
-                      className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[#111827] px-3 py-1.5 text-sm text-white hover:bg-black disabled:opacity-50"
+                      className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[#253c31] px-3 py-1.5 text-sm text-white hover:bg-black disabled:opacity-50"
                     >
                       <MapPin size={14} />
                       {resolving ? '检索中…' : draft.amapContext ? '重新检索' : '检索景区'}
                     </button>
                   </div>
                   {draft.amapContext ? (
-                    <pre className="max-h-64 overflow-y-auto rounded-lg bg-[#f9fafb] px-3 py-2 text-[11px] leading-relaxed text-[#4b5563] whitespace-pre-wrap font-sans">
+                    <pre className="max-h-64 overflow-y-auto rounded-lg bg-[#faf9f4] px-3 py-2 text-[11px] leading-relaxed text-[#596052] whitespace-pre-wrap font-sans">
                       {draft.areaPoi ? buildMainPoiText(draft.areaPoi) : draft.amapContext}
                     </pre>
                   ) : (
-                    <p className="text-sm text-[#9ca3af]">填写名称后点「检索景区」，确认主景区再进入下一步。</p>
+                    <p className="text-sm text-[#7f8375]">填写名称后点「检索景区」，确认主景区再进入下一步。</p>
                   )}
                 </div>
               </section>
@@ -625,7 +627,7 @@ export function PublishEditorPage() {
               <section className="space-y-4 rounded-2xl border border-black/[0.06] bg-white p-5">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-medium">候选地点</p>
-                  <p className="text-[11px] text-[#9ca3af]">
+                  <p className="text-[11px] text-[#7f8375]">
                     主景点与已选地点的方位示意，不按比例尺 · 点圆点取消选中
                   </p>
                 </div>
@@ -660,11 +662,12 @@ export function PublishEditorPage() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 min-h-0 flex">
-          <aside className="w-[min(100%,380px)] shrink-0 border-r border-black/5 bg-white flex flex-col min-h-0">
+        <div className="studio-map-layout flex-1 min-h-0 flex">
+          <aside className="studio-map-sidebar w-[min(100%,380px)] shrink-0 border-r border-black/5 bg-white flex flex-col min-h-0">
             <div className="p-4 space-y-3 border-b border-black/5 shrink-0 max-h-[52vh] overflow-y-auto">
-              <p className="text-xs text-[#9ca3af]">阶段二 · 地图选点</p>
-              <p className="text-sm text-[#6b7280] leading-relaxed">
+              <p className="journal-eyebrow">THE JOURNEY / 02</p>
+              <h1 className="studio-map-title">把想去的地方，连成旅程。</h1>
+              <p className="text-sm text-[#72766a] leading-relaxed">
                 勾选候选、拖标记校准坐标；文案留到「内容创作」再写。
               </p>
               <div className="flex flex-wrap gap-2">
@@ -674,8 +677,8 @@ export function PublishEditorPage() {
                   disabled={draft.spots.length < 2}
                   className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs disabled:opacity-45 ${
                     showRoute
-                      ? 'border-[#3b82f6]/40 bg-[#eff6ff] text-[#1d4ed8]'
-                      : 'border-black/10 hover:bg-[#f9fafb]'
+                      ? 'border-[#315442]/40 bg-[#f0f3e9] text-[#1d4ed8]'
+                      : 'border-black/10 hover:bg-[#faf9f4]'
                   }`}
                 >
                   <Route size={12} />
@@ -684,7 +687,7 @@ export function PublishEditorPage() {
                 <button
                   type="button"
                   onClick={onAddSpot}
-                  className="inline-flex items-center gap-1 rounded-lg border border-black/10 px-2.5 py-1.5 text-xs hover:bg-[#f9fafb]"
+                  className="inline-flex items-center gap-1 rounded-lg border border-black/10 px-2.5 py-1.5 text-xs hover:bg-[#faf9f4]"
                 >
                   <Plus size={12} />
                   手动加点
@@ -694,19 +697,19 @@ export function PublishEditorPage() {
 
             <div className="flex-1 min-h-0 overflow-y-auto">
               {draft.spots.length === 0 ? (
-                <p className="px-4 py-10 text-center text-sm text-[#9ca3af]">
+                <p className="px-4 py-10 text-center text-sm text-[#7f8375]">
                   回「1. 确定范围」勾选候选生成节点，或点上方「手动加点」
                 </p>
               ) : (
                 <div className="px-3 py-2 space-y-1">
                   <div className="flex items-center justify-between gap-2 px-1">
-                    <p className="text-xs font-medium text-[#6b7280]">漫游节点</p>
-                    <p className="text-[11px] text-[#9ca3af] tabular-nums">
+                    <p className="text-xs font-medium text-[#72766a]">漫游节点</p>
+                    <p className="text-[11px] text-[#7f8375] tabular-nums">
                       已编辑 {writtenCount}/{draft.spots.length}
                     </p>
                   </div>
                   {isStory && (
-                    <p className="px-1 pb-1 text-[11px] text-[#9ca3af]">
+                    <p className="px-1 pb-1 text-[11px] text-[#7f8375]">
                       入口：{storyEntryName} · 结局 {storyEndingCount} 个
                       {storyOrphans.length > 0 && (
                         <span className="text-amber-600"> · 孤立 {storyOrphans.length} 个</span>
@@ -720,7 +723,7 @@ export function PublishEditorPage() {
                       <div
                         key={spot.id}
                         className={`flex items-center gap-1 rounded-lg px-2 py-2 ${
-                          active ? 'bg-[#eff6ff]' : 'hover:bg-[#f9fafb]'
+                          active ? 'bg-[#f0f3e9]' : 'hover:bg-[#faf9f4]'
                         }`}
                       >
                         <div
@@ -739,7 +742,7 @@ export function PublishEditorPage() {
                             setMapCenter({ lng: spot.lng, lat: spot.lat })
                           }}
                         >
-                          <span className="w-5 h-5 rounded-full bg-[#111827] text-white text-[11px] flex items-center justify-center shrink-0">
+                          <span className="w-5 h-5 rounded-full bg-[#253c31] text-white text-[11px] flex items-center justify-center shrink-0">
                             {index + 1}
                           </span>
                           <span className="block min-w-0">
@@ -755,19 +758,19 @@ export function PublishEditorPage() {
                                 className={`shrink-0 cursor-pointer rounded border px-1.5 py-0.5 text-[10px] ${
                                   unwritten
                                     ? 'border-amber-300 text-amber-600 hover:bg-amber-50'
-                                    : 'border-black/10 text-[#6b7280] hover:bg-[#f3f4f6]'
+                                    : 'border-black/10 text-[#72766a] hover:bg-[#efeee5]'
                                 }`}
                               >
                                 {unwritten ? '未编辑' : '已编辑'}
                               </button>
                             </span>
-                            <span className="block text-[11px] text-[#9ca3af] tabular-nums">
+                            <span className="block text-[11px] text-[#7f8375] tabular-nums">
                               {spot.lng.toFixed(4)}, {spot.lat.toFixed(4)}
                             </span>
                             {isStory && (
                               <span
                                 className={`block truncate text-[11px] ${
-                                  storyIsExplicitEnding(draft, spot.id) ? 'text-[#6b7280]' : 'text-[#9ca3af]'
+                                  storyIsExplicitEnding(draft, spot.id) ? 'text-[#72766a]' : 'text-[#7f8375]'
                                 }`}
                               >
                                 {storyRowHint(spot)}
@@ -778,7 +781,7 @@ export function PublishEditorPage() {
                         <button
                           type="button"
                           disabled={index === 0}
-                          className="p-1 rounded text-[#9ca3af] hover:text-[#111827] disabled:opacity-25"
+                          className="p-1 rounded text-[#7f8375] hover:text-[#253c31] disabled:opacity-25"
                           onClick={() => moveSpot(index, -1)}
                         >
                           <ArrowUp size={14} />
@@ -786,14 +789,14 @@ export function PublishEditorPage() {
                         <button
                           type="button"
                           disabled={index === draft.spots.length - 1}
-                          className="p-1 rounded text-[#9ca3af] hover:text-[#111827] disabled:opacity-25"
+                          className="p-1 rounded text-[#7f8375] hover:text-[#253c31] disabled:opacity-25"
                           onClick={() => moveSpot(index, 1)}
                         >
                           <ArrowDown size={14} />
                         </button>
                         <button
                           type="button"
-                          className="p-1 rounded text-[#9ca3af] hover:text-red-600"
+                          className="p-1 rounded text-[#7f8375] hover:text-red-600"
                           onClick={() => removeSpot(spot.id)}
                         >
                           <Trash2 size={14} />
@@ -807,7 +810,7 @@ export function PublishEditorPage() {
               {isStory && selectedSpot && (
                 <div className="space-y-3 border-t border-black/5 p-4">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="inline-flex min-w-0 items-center gap-1.5 text-xs font-medium text-[#6b7280]">
+                    <p className="inline-flex min-w-0 items-center gap-1.5 text-xs font-medium text-[#72766a]">
                       <GitBranch size={12} className="shrink-0" />
                       <span className="truncate">分支 · {selectedSpot.name}</span>
                     </p>
@@ -815,21 +818,21 @@ export function PublishEditorPage() {
                       type="button"
                       onClick={() => setStoryEntry(selectedSpot.id)}
                       disabled={storyEntryId(draft) === selectedSpot.id}
-                      className="shrink-0 cursor-pointer rounded border border-black/10 px-1.5 py-0.5 text-[10px] hover:bg-[#f3f4f6] disabled:opacity-45"
+                      className="shrink-0 cursor-pointer rounded border border-black/10 px-1.5 py-0.5 text-[10px] hover:bg-[#efeee5] disabled:opacity-45"
                     >
                       {storyEntryId(draft) === selectedSpot.id ? '已是入口' : '设为入口'}
                     </button>
                   </div>
 
                   <div>
-                    <p className="text-[11px] text-[#9ca3af]">去向（可多选，不设上限；全不勾 = 结局）</p>
+                    <p className="text-[11px] text-[#7f8375]">去向（可多选，不设上限；全不勾 = 结局）</p>
                     <div className="mt-1 max-h-40 space-y-0.5 overflow-y-auto">
                       {draft.spots
                         .filter((s) => s.id !== selectedSpot.id)
                         .map((s) => (
                           <label
                             key={s.id}
-                            className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-xs hover:bg-[#f9fafb]"
+                            className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-xs hover:bg-[#faf9f4]"
                           >
                             <input
                               type="checkbox"
@@ -846,11 +849,11 @@ export function PublishEditorPage() {
                     <button
                       type="button"
                       onClick={() => resetStoryChoices(selectedSpot.id)}
-                      className="cursor-pointer rounded border border-black/10 px-2 py-1 text-[11px] hover:bg-[#f3f4f6]"
+                      className="cursor-pointer rounded border border-black/10 px-2 py-1 text-[11px] hover:bg-[#efeee5]"
                     >
                       按数组顺序（默认）
                     </button>
-                    <span className="inline-flex items-center gap-1 text-[11px] text-[#9ca3af]">
+                    <span className="inline-flex items-center gap-1 text-[11px] text-[#7f8375]">
                       {storyNextChoices(draft, selectedSpot.id).length === 0 ? (
                         <>
                           <Flag size={11} />
@@ -866,7 +869,7 @@ export function PublishEditorPage() {
 
               {isStory && (storyBlockers.length > 0 || storyWarnings.length > 0) && (
                 <div className="space-y-1 border-t border-black/5 p-4">
-                  <p className="text-xs font-medium text-[#6b7280]">分支检查</p>
+                  <p className="text-xs font-medium text-[#72766a]">分支检查</p>
                   {storyBlockers.map((issue, i) => (
                     <p key={`e${i}`} className="text-[11px] leading-relaxed text-red-600">
                       · {issue.message}
@@ -881,11 +884,11 @@ export function PublishEditorPage() {
               )}
 
               <div className="border-t border-black/5 p-4 space-y-2">
-                <p className="text-xs font-medium text-[#6b7280]">游客起点</p>
-                <p className="text-[11px] text-[#9ca3af] tabular-nums">
+                <p className="text-xs font-medium text-[#72766a]">游客起点</p>
+                <p className="text-[11px] text-[#7f8375] tabular-nums">
                   {draft.start.lng.toFixed(5)}, {draft.start.lat.toFixed(5)}
                 </p>
-                <p className="text-[10px] text-[#9ca3af]">
+                <p className="text-[10px] text-[#7f8375]">
                   直接拖地图上的绿色「起」标记即可挪动
                 </p>
               </div>
@@ -895,19 +898,19 @@ export function PublishEditorPage() {
                   type="button"
                   onClick={() => onGoContent()}
                   disabled={busy || draft.spots.length === 0}
-                  className="w-full inline-flex items-center justify-center gap-1 rounded-lg bg-[#111827] text-white px-3 py-2 text-sm hover:bg-black disabled:opacity-50"
+                  className="w-full inline-flex items-center justify-center gap-1 rounded-lg bg-[#253c31] text-white px-3 py-2 text-sm hover:bg-black disabled:opacity-50"
                 >
                   内容创作
                   <ArrowRight size={14} />
                 </button>
-                <p className="text-[10px] text-[#9ca3af]">
+                <p className="text-[10px] text-[#7f8375]">
                   逐站写文案；全部写完（{writtenCount}/{draft.spots.length}）才能发布
                 </p>
               </div>
             </div>
           </aside>
 
-          <section className="relative flex-1 min-w-0">
+          <section className="studio-map-canvas relative flex-1 min-w-0">
             <PublishSpotMap
               center={mapCenter || draft.start}
               zoom={draft.zoom}
@@ -930,7 +933,7 @@ export function PublishEditorPage() {
                 {mapError}
               </div>
             )}
-            <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-[#6b7280] bg-white/90 px-3 py-1.5 rounded-full border border-black/5 shadow-sm">
+            <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-[#72766a] bg-white/90 px-3 py-1.5 rounded-full border border-black/5 shadow-sm">
               拖标记校准位置 · 拖绿标定游客起点 · 列表顺序即游览顺序
             </p>
           </section>
@@ -938,7 +941,7 @@ export function PublishEditorPage() {
       )}
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-full bg-[#111827] text-white text-sm px-4 py-2 shadow-lg max-w-[90vw]">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-full bg-[#253c31] text-white text-sm px-4 py-2 shadow-lg max-w-[90vw]">
           {toast}
           <button type="button" className="ml-3 text-white/60" onClick={() => setToast('')}>
             关闭

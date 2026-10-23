@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import type { Spot } from '../types/attraction'
 import { extractWalkingPath } from '../lib/amapWalking'
@@ -68,12 +68,12 @@ function markerHtml(index: number, name: string, active: boolean) {
       <div style="
         width:28px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center;
         font:600 13px/1 system-ui,sans-serif;color:#fff;
-        background:${active ? '#3b82f6' : '#111827'};
+        background:${active ? '#315442' : '#253c31'};
         box-shadow:0 4px 12px rgba(0,0,0,.2);border:2px solid #fff;
       ">${index + 1}</div>
       <div style="
         margin-top:4px;padding:2px 8px;border-radius:6px;font:500 12px/1.2 system-ui,sans-serif;
-        background:rgba(255,255,255,.96);color:#111827;border:1px solid rgba(0,0,0,.06);
+        background:rgba(255,255,255,.96);color:#253c31;border:1px solid rgba(0,0,0,.06);
         white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.08);
       ">${name}</div>
     </div>
@@ -332,7 +332,7 @@ export function PublishSpotMap({
 
       const line = new AMapLib.Polyline({
         path: seg,
-        strokeColor: '#3b82f6',
+        strokeColor: '#315442',
         strokeWeight: 4,
         strokeOpacity: real ? 0.85 : 0.55,
         strokeStyle: real ? 'solid' : 'dashed',
@@ -452,7 +452,7 @@ export function PublishSpotMap({
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full bg-[#f5f5f5]" />
       {routeHint && (
-        <div className="pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-full border border-black/5 bg-white/95 px-3 py-1 text-xs text-[#6b7280] shadow-sm">
+        <div className="pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-full border border-black/5 bg-white/95 px-3 py-1 text-xs text-[#72766a] shadow-sm">
           {routeHint}
         </div>
       )}

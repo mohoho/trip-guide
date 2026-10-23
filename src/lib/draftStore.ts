@@ -252,7 +252,7 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 }
 
 /**
- * 草稿图片 → /spots/<id>/<节点>.<ext> 路径，图片本体另行落盘
+ * 草稿图片 → /spots/<id>/<节点>-<内容哈希>.<ext>，避免发布失败时覆盖线上图片
  * 同一张图（按字节比较）只留一份引用，避免包内重复
  */
 export async function prepareMedia(draft: DraftAttraction): Promise<{
@@ -272,7 +272,10 @@ export async function prepareMedia(draft: DraftAttraction): Promise<{
     const dup = seen.find((c) => c.sig === sig && sameBytes(c.buffer, buffer))
     if (dup) return dup.publicPath
 
-    const relPath = `${draft.id}/${logicalName}${extFromMimeOrRef(ref, blob.type)}`
+    // WebCrypto digest requires HTTPS. Plain HTTP installations use a random immutable filename.
+    const digest = crypto.subtle ? new Uint8Array(await crypto.subtle.digest('SHA-256', buffer)) : crypto.getRandomValues(new Uint8Array(16))
+    const fingerprint = Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('').slice(0, 20)
+    const relPath = `${draft.id}/${logicalName}-${fingerprint}${extFromMimeOrRef(ref, blob.type)}`
     const publicPath = `/spots/${relPath}`
     seen.push({ sig, buffer, publicPath })
     media.push({ relPath, publicPath, blob })
@@ -370,19 +373,9 @@ export function buildCatalog(packages: PublishedAttraction[]): AttractionCatalog
   }
 }
 
-function downloadJson(filename: string, data: unknown) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
 /**
- * 发布：图片落成文件、包体写入本应用 public/spots（与前台同一数据源）
- * 开发服务不可用时回落为浏览器下载（图片内嵌的离线包）
+ * 发布：先上传不可变图片、提交发布包；后端确认成功后才保存 published 状态。
+ * 失败直接报告错误，草稿保留，不把下载文件误当作在线发布。
  */
 export async function publishDraft(
   id: string,
@@ -390,33 +383,24 @@ export async function publishDraft(
 ): Promise<{
   draft: DraftAttraction
   pkg: PublishedAttraction
-  mode: 'config' | 'download'
+  mode: 'config'
   targetLabel?: string
 } | null> {
   const item = getDraft(id)
   if (!item || item.spots.length === 0) return null
-  const draft = saveDraft({
+  const draft: DraftAttraction = {
     ...item,
-    status: 'published',
     start: opts?.start || item.start,
     zoom: typeof opts?.zoom === 'number' && opts.zoom > 0 ? opts.zoom : item.zoom || DEFAULT_MAP_ZOOM,
     coverImage: item.coverImage || item.spots[0].image,
-  })
+  }
   const { pkg, media } = await toPublishedPackage(draft)
 
-  try {
-    const written = await exportPackageViaServer(pkg, media)
-    return {
-      draft,
-      pkg,
-      mode: 'config',
-      targetLabel: `${written.absolutePath}\\${written.attractionPath}`,
-    }
-  } catch {
-    const local = await toSelfContainedPackage(draft)
-    downloadJson(`${local.id}.json`, local)
-    await new Promise((r) => setTimeout(r, 120))
-    downloadJson('catalog.json', buildCatalog([local]))
-    return { draft, pkg: local, mode: 'download' }
+  const written = await exportPackageViaServer(pkg, media)
+  return {
+    draft: saveDraft({ ...draft, status: 'published' }),
+    pkg: { ...pkg, publishedAt: written.publishedAt },
+    mode: 'config',
+    targetLabel: written.publicPath,
   }
 }

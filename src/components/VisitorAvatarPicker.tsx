@@ -21,20 +21,20 @@ export function VisitorAvatarPicker({
 
   return (
     <div className="mb-3 flex items-center gap-3">
-      <span className="text-xs text-[#9ca3af] shrink-0">{label}</span>
+      <span className="text-xs text-[#7f8375] shrink-0">{label}</span>
       <span className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-black/10 bg-white">
         <img src={value || mascot} alt="" className="h-full w-full object-cover" />
       </span>
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
-        className="inline-flex items-center gap-1 text-xs text-[#3b82f6] shrink-0"
+        className="inline-flex items-center gap-1 text-xs text-[#315442] shrink-0"
       >
         <ImagePlus size={13} />
         上传
       </button>
       {value && (
-        <button type="button" onClick={onReset} className="text-xs text-[#9ca3af] shrink-0">
+        <button type="button" onClick={onReset} className="text-xs text-[#7f8375] shrink-0">
           恢复默认
         </button>
       )}

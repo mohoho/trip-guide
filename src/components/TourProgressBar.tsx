@@ -40,10 +40,10 @@ export function TourProgressBar({ chapters, cursor, visible, onJumpChapter }: To
               type="button"
               onClick={() => onJumpChapter(i)}
               className={`cursor-pointer shrink-0 rounded-xl px-2.5 py-1.5 text-left transition-colors ${
-                isActive ? 'bg-[#eff6ff] text-[#1d4ed8]' : 'hover:bg-[#f3f4f6] text-[#111827]'
+                isActive ? 'bg-[#f0f3e9] text-[#1d4ed8]' : 'hover:bg-[#efeee5] text-[#253c31]'
               }`}
             >
-              <span className="block text-[10px] text-[#9ca3af]">{i + 1}</span>
+              <span className="block text-[10px] text-[#7f8375]">{i + 1}</span>
               <span className="block text-xs whitespace-nowrap">{c.title}</span>
               {isActive && (
                 <span className="mt-1 flex gap-1">
@@ -51,7 +51,7 @@ export function TourProgressBar({ chapters, cursor, visible, onJumpChapter }: To
                     <span
                       key={s}
                       className={`h-1.5 w-1.5 rounded-full ${
-                        s <= cursor.step ? 'bg-[#3b82f6]' : 'bg-[#e5e7eb]'
+                        s <= cursor.step ? 'bg-[#315442]' : 'bg-[#dedfd2]'
                       }`}
                     />
                   ))}

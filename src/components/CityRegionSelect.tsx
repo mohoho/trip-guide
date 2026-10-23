@@ -13,7 +13,7 @@ type Props = {
 }
 
 const selectClass =
-  'w-full rounded-lg border border-black/8 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#3b82f6]/50 disabled:opacity-50'
+  'w-full rounded-lg border border-black/8 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#315442]/50 disabled:opacity-50'
 
 /** 省市级联下拉：数据来自高德 AMap.DistrictSearch */
 export function CityRegionSelect({ value, onChange, disabled }: Props) {

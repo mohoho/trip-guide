@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import { extractWalkingPath } from '../lib/amapWalking'
 import visitorImage from '../assets/visitor.png'
@@ -33,7 +33,7 @@ interface AmapLiveMapProps {
 }
 
 function spotHtml(label: string, name: string, active: boolean) {
-  const bg = active ? '#3b82f6' : '#111827'
+  const bg = active ? '#315442' : '#253c31'
   const badge = label
     ? `<div style="width:26px;height:26px;margin:0 auto;border-radius:999px;background:${bg};color:#fff;font:600 12px/26px system-ui,sans-serif;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25)">${label}</div>`
     : `<div style="width:14px;height:14px;margin:6px auto;border-radius:999px;background:${bg};border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25)"></div>`
@@ -307,7 +307,7 @@ export function AmapLiveMap({
     if (!map || !AMapLib || !routePath || routePath.length < 2) return
     const line = new AMapLib.Polyline({
       path: routePath.map((p) => [p.lng, p.lat]),
-      strokeColor: '#3b82f6',
+      strokeColor: '#315442',
       strokeWeight: 4,
       strokeOpacity: 0.85,
       showDir: true,

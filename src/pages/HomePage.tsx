@@ -1,168 +1,119 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowDown, ArrowRight, Compass, Headphones, Route } from 'lucide-react'
 import { ModeTag } from '../components/ModeTag'
 import { SiteFooter } from '../components/SiteFooter'
 import { SiteHeader } from '../components/SiteHeader'
 import type { CatalogItem, TourMode } from '../lib/tourPackage'
 import { loadCatalog } from '../lib/catalog'
 
-/** 首页页首的图例：色标 = 卡片上的标，后面跟一句这个标的意思 */
-const MODE_LEGEND: Array<{ mode: TourMode; text: string }> = [
-  { mode: 'checkin', text: '游遍景点，按顺序走完' },
-  { mode: 'story', text: '分支探索，路口自己选下一步' },
+type ModeFilter = 'all' | TourMode
+const FILTERS: Array<{ value: ModeFilter; label: string }> = [
+  { value: 'all', label: '全部目的地' },
+  { value: 'checkin', label: '打卡漫游' },
+  { value: 'story', label: '故事探索' },
 ]
-
-/** 顶部 banner 自动轮播的间隔；鼠标停在上头时暂停 */
-const BANNER_INTERVAL_MS = 7000
 
 export function HomePage() {
   const [list, setList] = useState<CatalogItem[]>([])
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [filter, setFilter] = useState<ModeFilter>('all')
 
   useEffect(() => {
     loadCatalog()
-      .then(setList)
+      .then((items) => {
+        // 以园林打卡开篇，故事目的地仍按原有发布顺序排列。
+        setList([...items.filter((item) => item.mode !== 'story'), ...items.filter((item) => item.mode === 'story')])
+      })
       .catch((e) => setError(e instanceof Error ? e.message : '目录加载失败'))
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
-    if (paused || list.length < 2) return
-    const timer = window.setInterval(() => setIndex((i) => (i + 1) % list.length), BANNER_INTERVAL_MS)
+    if (paused || list.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const timer = window.setInterval(() => setIndex((i) => (i + 1) % list.length), 7000)
     return () => window.clearInterval(timer)
   }, [paused, list.length])
 
-  const active = list.length > 0 ? Math.min(index, list.length - 1) : 0
+  const active = Math.min(index, Math.max(0, list.length - 1))
+  const featured = list[active]
+  const destinations = list.filter((item) => filter === 'all' || (item.mode || 'checkin') === filter)
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f7f8fa] text-[#111827]">
+    <div className="journal-page">
       <SiteHeader cta={{ label: '发布后台', to: '/publish' }} />
-
-      <main className="mx-auto w-full max-w-5xl flex-1 px-5 sm:px-8 py-6 sm:py-8 space-y-6">
-        <div>
-          <h2 className="text-lg font-medium tracking-tight">选择景点开始漫游</h2>
-          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <p className="text-sm text-[#6b7280]">点击进入沉浸式地图漫游，边走边听讲解</p>
-            {/* 卡片右下角那两个标是什么意思：跟在副题同一行；没景点就不显示 */}
-            {list.length > 0 && !error && (
-              <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6b7280]">
-                {MODE_LEGEND.map((entry) => (
-                  <li key={entry.mode} className="inline-flex items-center gap-1.5">
-                    <ModeTag mode={entry.mode} />
-                    <span>{entry.text}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
+      <main>
+        <section className="journal-hero" aria-label="精选漫游"
+          onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
+          onFocusCapture={() => setPaused(true)}
+          onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false) }}>
+          <div className="journal-hero-copy">
+            <p className="journal-eyebrow"><span /> THE ART OF WANDERING</p>
+            <h1>让每一步，<br />都有<span>故事。</span></h1>
+            <p className="journal-hero-intro">走进风景，也走进风景里的故事。<br />跟随地图与声音，发现沿途的小小惊喜。</p>
+            <div className="journal-poem"><span aria-hidden="true">漫<br />游</span><p>在时光的庭院里<br />遇见更大的世界</p></div>
+            {featured && <Link to={`/tour/${featured.id}`} className="journal-primary">开始漫游 <ArrowRight size={17} /></Link>}
+            <div className="journal-hero-bottom">
+              {list.length > 1 && <div className="journal-pagination" aria-label="切换精选目的地">
+                {list.map((item, i) => <button type="button" key={item.id}
+                  aria-label={`切换到 ${item.name}`} aria-pressed={i === active}
+                  className={i === active ? 'is-active' : ''} onClick={() => setIndex(i)}>
+                  {String(i + 1).padStart(2, '0')}<span /></button>)}
+              </div>}
+              <a href="#destinations" className="journal-scroll" aria-label="浏览精选目的地"
+                onClick={(event) => { event.preventDefault(); document.getElementById('destinations')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }) }}>
+                <ArrowDown size={15} /> 向下探索
+              </a>
+            </div>
           </div>
-        </div>
-
-        {error ? (
-          <div className="rounded-2xl border border-red-100 bg-white px-6 py-8 text-sm text-red-600">{error}</div>
-        ) : list.length === 0 ? (
-          <div className="rounded-2xl border border-black/[0.06] bg-white px-6 py-16 text-center text-sm text-[#6b7280]">
-            暂无已发布景点
+          <div className="journal-hero-visual">
+            {featured ? <>
+              <img key={featured.id} src={featured.coverImage} alt={featured.name} className="journal-hero-image" />
+              <span className="journal-image-note">一处风景 / 一段旅程</span>
+              <Link to={`/tour/${featured.id}`} className="journal-feature-caption">
+                <div><span>本期漫游 · {featured.mode === 'story' ? '故事探索' : '打卡漫游'}</span><h2>{featured.name}</h2></div>
+                <span className="journal-circle"><ArrowRight size={20} /></span>
+              </Link>
+            </> : <div className="journal-hero-placeholder"><Compass size={48} strokeWidth={1} /><p>{error ? '暂时无法加载目的地' : loading ? '正在寻找沿途风景…' : '期待下一段旅程'}</p></div>}
           </div>
-        ) : (
-          <>
-            <div
-              className="relative overflow-hidden rounded-2xl border border-black/[0.06] bg-[#111827]"
-              onMouseEnter={() => setPaused(true)}
-              onMouseLeave={() => setPaused(false)}
-            >
-              <div
-                className="flex transition-transform duration-700 ease-out"
-                style={{ transform: `translateX(-${active * 100}%)` }}
-              >
-                {list.map((item) => (
-                  <Link
-                    key={item.id}
-                    to={`/tour/${item.id}`}
-                    className="group relative block w-full shrink-0 min-h-[220px] sm:min-h-[300px]"
-                  >
-                    <img
-                      src={item.coverImage}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:scale-[1.02] transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-                    <div className="relative z-10 flex flex-col justify-end h-full min-h-[220px] sm:min-h-[300px] p-6 sm:p-8">
-                      <h2 className="text-2xl sm:text-3xl font-medium text-white tracking-tight">
-                        {item.name}
-                      </h2>
-                      <p className="mt-2 text-sm text-white/80 max-w-xl line-clamp-2">{item.description}</p>
-                      <span className="mt-4 inline-flex items-center gap-1.5 self-start rounded-lg bg-white text-[#111827] px-3.5 py-2 text-sm font-medium">
-                        开始漫游
-                        <ArrowRight size={14} />
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+        </section>
 
-              {list.length > 1 && (
-                <div className="absolute bottom-5 right-5 z-10 flex items-center gap-1.5">
-                  {list.map((item, i) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      aria-label={`切换到 ${item.name}`}
-                      onClick={() => setIndex(i)}
-                      className={`h-1.5 cursor-pointer rounded-full transition-all ${
-                        i === active ? 'w-5 bg-white' : 'w-1.5 bg-white/45 hover:bg-white/75'
-                      }`}
-                    />
-                  ))}
+        <section className="journal-destinations" id="destinations">
+          <div className="journal-section-heading">
+            <div><p className="journal-eyebrow">CURATED JOURNEYS</p><h2>下一站，去哪里<span>？</span></h2></div>
+            <p>不必远行，也能发现新的世界。<br /><span>{list.length} 处目的地，等你慢慢探索</span></p>
+          </div>
+          <div className="journal-filter-row">
+            <div className="journal-filters" role="group" aria-label="按漫游模式筛选">
+              {FILTERS.map((entry) => <button key={entry.value} type="button" aria-pressed={filter === entry.value}
+                className={filter === entry.value ? 'is-active' : ''} onClick={() => setFilter(entry.value)}>{entry.label}</button>)}
+            </div><span className="journal-count">{String(destinations.length).padStart(2, '0')} / 目的地</span>
+          </div>
+          {error ? <div role="alert" className="journal-empty">{error}</div>
+            : loading ? <div className="journal-empty" role="status">正在加载目的地…</div>
+            : destinations.length === 0 ? <div className="journal-empty">{list.length ? '这个分类还没有目的地，看看其他漫游吧。' : '暂无已发布目的地，下一段旅程即将开始。'}</div>
+            : <div className="journal-destination-grid">
+              {destinations.map((item, i) => <Link key={item.id} to={`/tour/${item.id}`} className="journal-destination-card">
+                <div className="journal-card-image"><img src={item.coverImage} alt={item.name} loading="lazy" /><span className="journal-card-mode"><ModeTag mode={item.mode} /></span><span className="journal-card-number">JOURNEY / {String(i + 1).padStart(2, '0')}</span></div>
+                <div className="journal-card-copy"><div className="journal-card-title"><h3>{item.name}</h3><ArrowRight size={21} strokeWidth={1.4} /></div>
+                  {item.storyTitle && <p className="journal-story-title">{item.storyTitle}</p>}
+                  <p className="journal-card-description">{item.description}</p>
+                  <span className="journal-card-action">{item.mode === 'story' ? '走进故事，选择你的下一步' : '沿着路线，边走边听'} <ArrowRight size={14} /></span>
                 </div>
-              )}
-            </div>
+              </Link>)}
+            </div>}
+        </section>
 
-            <div>
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="text-sm font-medium text-[#6b7280]">全部景点</h3>
-                <span className="text-xs text-[#9ca3af]">{list.length} 个</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {list.map((item) => (
-                  <Link
-                    key={item.id}
-                    to={`/tour/${item.id}`}
-                    className="group rounded-2xl border border-black/[0.06] bg-white overflow-hidden hover:shadow-md transition-shadow"
-                  >
-                    <div className="aspect-[16/10] bg-[#f3f4f6] overflow-hidden">
-                      <img
-                        src={item.coverImage}
-                        alt=""
-                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="p-3.5">
-                      <div className="flex min-w-0 items-baseline gap-1.5">
-                        <h4 className="truncate text-[15px] font-medium">{item.name}</h4>
-                        {item.storyTitle ? (
-                          <span className="shrink-0 text-xs text-[#9ca3af]">{item.storyTitle}</span>
-                        ) : null}
-                      </div>
-                      <p className="mt-1.5 text-sm text-[#6b7280] line-clamp-2">{item.description}</p>
-                      <div className="mt-3 flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1 text-sm text-[#3b82f6]">
-                          开始
-                          <ArrowRight size={14} />
-                        </span>
-                        {/* 与漫游页页头同款的小标：故事实心、打卡描边（只写模式名） */}
-                        <ModeTag mode={item.mode} />
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
+        <section className="journal-about" id="wander-guide" aria-label="漫游指南">
+          <div className="journal-about-heading"><p className="journal-eyebrow">WANDER YOUR WAY</p><h2>慢一点，<br />风景会说话。</h2><p>把旅程交给好奇心，<br />把沿途的故事交给我们。</p></div>
+          <div className="journal-guide"><Compass size={25} strokeWidth={1.3} /><span>01 / 发现</span><h3>选一处心动的风景</h3><p>从目的地出发，走进一座园林，或开启一场未知的冒险。</p></div>
+          <div className="journal-guide"><Headphones size={25} strokeWidth={1.3} /><span>02 / 聆听</span><h3>听见风景里的故事</h3><p>跟随地图漫游，抵达节点展开讲解，让每一站都值得停留。</p></div>
+          <div className="journal-guide"><Route size={25} strokeWidth={1.3} /><span>03 / 探索</span><h3>走出自己的旅程</h3><p>按路线打卡，或在故事路口做出选择，以喜欢的方式探索。</p></div>
+        </section>
       </main>
-
       <SiteFooter />
     </div>
   )

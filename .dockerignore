@@ -1,4 +1,4 @@
-# 构建上下文只需要 dist 与 nginx.conf，其余全部挡掉
+# 构建上下文只需要 dist 与 server，其余不打进镜像
 # （node_modules 几万个小文件，不排除会让 docker build 卡在 sending context）
 node_modules
 .git
@@ -12,3 +12,5 @@ docs
 .env
 *.log
 *.md
+data
+server/*.test.mjs

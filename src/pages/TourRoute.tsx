@@ -38,9 +38,9 @@ export function TourRoute() {
 
   if (error) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-[#f7f8fa] px-6 text-center">
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-[#f8f6ef] px-6 text-center">
         <p className="text-sm text-red-600">{error}</p>
-        <Link to="/" className="text-sm text-[#3b82f6] hover:underline">
+        <Link to="/" className="text-sm text-[#315442] hover:underline">
           返回景点列表
         </Link>
       </div>
@@ -49,7 +49,7 @@ export function TourRoute() {
 
   if (!pkg) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#f7f8fa] text-sm text-[#6b7280]">
+      <div className="flex h-screen items-center justify-center bg-[#f8f6ef] text-sm text-[#72766a]">
         正在载入…
       </div>
     )

@@ -1,15 +1,13 @@
-# 静态站点镜像：只把本地构建好的 dist 装进 Nginx。
-#
-# 构建刻意放在本地（`npm run build`），镜像里只做 COPY：
-#   1. VITE_* 是构建期内联的，本地构建意味着密钥不出本机、也不必在服务器上配 Node；
-#   2. 服务器上无需装 Node/依赖，构建只花打包 dist 的时间。
-# 所以这个 Dockerfile **必须在本地先跑过 `npm run build`**，否则 `COPY dist/` 会失败。
-#
-# 拉不动 nginx:alpine 时（腾讯云到 Docker Hub 时常超时）换成国内镜像源再 build：
-#   FROM docker.m.daocloud.io/library/nginx:alpine
-FROM nginx:alpine
-
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY dist/ /usr/share/nginx/html/
-
-EXPOSE 80
+# Build the browser app locally with npm run build, then package it with the API.
+# VITE_* variables are public browser configuration, not private server secrets.
+FROM node:24-alpine
+WORKDIR /app
+ENV NODE_ENV=production HOST=0.0.0.0 PORT=3001 DATA_DIR=/app/data
+COPY --chown=node:node server/ ./server/
+COPY --chown=node:node dist/ ./dist/
+RUN mkdir -p /app/data && chown node:node /app/data
+USER node
+EXPOSE 3001
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3001/__trip_guide/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+CMD ["node", "server/index.mjs"]

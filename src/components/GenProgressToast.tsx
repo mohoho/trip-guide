@@ -15,7 +15,7 @@ export function GenProgressToast({
 }) {
   if (!text) return null
   return (
-    <div className="fixed bottom-6 left-1/2 z-50 flex max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-full bg-[#111827] px-4 py-2 text-sm text-white shadow-lg">
+    <div className="fixed bottom-6 left-1/2 z-50 flex max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-full bg-[#253c31] px-4 py-2 text-sm text-white shadow-lg">
       {progress && (
         <>
           {/* 实心＝已跑完的段，浅色＝正在跑的这段（所以最后一段跑完时进度条才是满的） */}

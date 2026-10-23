@@ -20,29 +20,29 @@ export function SpotContentPanel({ spot, onPatch, onSlide, onUpload }: SpotConte
   return (
     <div className="space-y-3">
       <label className="block">
-        <span className="text-xs text-[#9ca3af]">名称</span>
+        <span className="text-xs text-[#7f8375]">名称</span>
         <input
           value={spot.name}
           onChange={(e) => onPatch({ name: e.target.value })}
-          className="mt-1 w-full rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
+          className="mt-1 w-full rounded-lg border border-black/8 bg-[#faf9f4] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#315442]/50"
         />
       </label>
       <label className="block">
-        <span className="text-xs text-[#9ca3af]">诗意副标题</span>
+        <span className="text-xs text-[#7f8375]">诗意副标题</span>
         <input
           value={spot.poetic}
           onChange={(e) => onPatch({ poetic: e.target.value })}
-          className="mt-1 w-full rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
+          className="mt-1 w-full rounded-lg border border-black/8 bg-[#faf9f4] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#315442]/50"
         />
       </label>
       <div>
-        <span className="text-xs text-[#9ca3af]">实景图</span>
-        <div className="mt-1 rounded-lg border border-black/8 overflow-hidden bg-[#f3f4f6]">
+        <span className="text-xs text-[#7f8375]">实景图</span>
+        <div className="mt-1 rounded-lg border border-black/8 overflow-hidden bg-[#efeee5]">
           <div className="aspect-[16/10]">
             {spot.image ? (
               <img src={spot.image} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-[#9ca3af]">
+              <div className="w-full h-full flex items-center justify-center text-xs text-[#7f8375]">
                 未上传
               </div>
             )}
@@ -51,7 +51,7 @@ export function SpotContentPanel({ spot, onPatch, onSlide, onUpload }: SpotConte
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1 text-xs text-[#3b82f6]"
+              className="inline-flex items-center gap-1 text-xs text-[#315442]"
             >
               <ImagePlus size={13} />
               上传
@@ -71,29 +71,29 @@ export function SpotContentPanel({ spot, onPatch, onSlide, onUpload }: SpotConte
         </div>
       </div>
       <label className="block">
-        <span className="text-xs text-[#9ca3af]">讲解标题</span>
+        <span className="text-xs text-[#7f8375]">讲解标题</span>
         <input
           value={spot.slides[0]?.title || ''}
           onChange={(e) => onSlide('title', e.target.value)}
-          className="mt-1 w-full rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
+          className="mt-1 w-full rounded-lg border border-black/8 bg-[#faf9f4] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#315442]/50"
         />
       </label>
       <label className="block">
-        <span className="text-xs text-[#9ca3af]">要点（每行一条）</span>
+        <span className="text-xs text-[#7f8375]">要点（每行一条）</span>
         <textarea
           value={(spot.slides[0]?.bullets || []).join('\n')}
           onChange={(e) => onSlide('bullets', e.target.value)}
           rows={3}
-          className="mt-1 w-full resize-none rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
+          className="mt-1 w-full resize-none rounded-lg border border-black/8 bg-[#faf9f4] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#315442]/50"
         />
       </label>
       <label className="block">
-        <span className="text-xs text-[#9ca3af]">口播文案</span>
+        <span className="text-xs text-[#7f8375]">口播文案</span>
         <textarea
           value={spot.slides[0]?.narration || ''}
           onChange={(e) => onSlide('narration', e.target.value)}
           rows={6}
-          className="mt-1 w-full resize-none rounded-lg border border-black/8 bg-[#f9fafb] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#3b82f6]/50"
+          className="mt-1 w-full resize-none rounded-lg border border-black/8 bg-[#faf9f4] px-2.5 py-1.5 text-sm outline-none focus:bg-white focus:border-[#315442]/50"
         />
       </label>
     </div>

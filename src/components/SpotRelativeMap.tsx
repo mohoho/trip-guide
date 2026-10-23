@@ -33,8 +33,8 @@ function dot(picked: boolean, isMain: boolean) {
     return { r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }
   }
   return picked
-    ? { r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 1.5 }
-    : { r: 5, fill: '#fff', stroke: '#6b7280', strokeWidth: 1.5 }
+    ? { r: 5, fill: '#315442', stroke: '#fff', strokeWidth: 1.5 }
+    : { r: 5, fill: '#fff', stroke: '#72766a', strokeWidth: 1.5 }
 }
 
 /**
@@ -152,7 +152,7 @@ export function SpotRelativeMap({ main, points = [], emptyHint, onToggle }: Spot
                   textAnchor={flip ? 'end' : 'start'}
                   fontSize={p.isMain ? 12 : 11}
                   fontWeight={p.isMain ? 600 : 400}
-                  fill={p.isMain ? '#111827' : p.picked ? '#111827' : '#9ca3af'}
+                  fill={p.isMain ? '#253c31' : p.picked ? '#253c31' : '#7f8375'}
                   stroke={CANVAS_BG}
                   strokeWidth={3}
                   paintOrder="stroke"
@@ -165,7 +165,7 @@ export function SpotRelativeMap({ main, points = [], emptyHint, onToggle }: Spot
           })}
         </svg>
       ) : (
-        <p className="px-6 text-center text-xs leading-relaxed text-[#9ca3af]">
+        <p className="px-6 text-center text-xs leading-relaxed text-[#7f8375]">
           {emptyHint || '检索景区后，这里显示主景点与候选点的相对位置'}
         </p>
       )}

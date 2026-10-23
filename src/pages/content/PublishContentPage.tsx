@@ -39,7 +39,7 @@ export function PublishContentPage() {
 
   if (!draft) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f7f8fa] text-sm text-[#6b7280]">
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f6ef] text-sm text-[#72766a]">
         加载中…
       </div>
     )

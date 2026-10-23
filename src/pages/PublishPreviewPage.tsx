@@ -12,6 +12,7 @@ import type { PublishedAttraction } from '../lib/tourPackage'
 import type { DraftAttraction } from '../types/attraction'
 import { StoryTourPage } from './StoryTourPage'
 import { TourPage } from './TourPage'
+import { PublishAccess } from '../components/PublishAccess'
 
 /**
  * `/publish/:id/preview`：编辑端与前台之间的那一站 —— 按前台本尊的样子跑一遍草稿，发布也从这里出。
@@ -83,13 +84,8 @@ export function PublishPreviewPage() {
       const result = await publishDraft(draft.id, { zoom: draft.zoom, start: draft.start })
       if (result) {
         setDraft(result.draft)
-        const n = Object.keys(result.pkg.assets || {}).length
         setPublished(true)
-        setToast(
-          result.mode === 'config'
-            ? `已发布（${n} 张图），前台可立即查看`
-            : `写入 public/spots 失败，已改为下载文件（含 ${n} 张图）`,
-        )
+        setToast('已发布，前台可立即查看')
       }
     } catch (e) {
       setToast(e instanceof Error ? e.message : '导出失败')
@@ -100,9 +96,9 @@ export function PublishPreviewPage() {
 
   if (failed) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[#f7f8fa] px-6 text-center">
+      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[#f8f6ef] px-6 text-center">
         <p className="text-sm text-red-600">{failed}</p>
-        <button type="button" onClick={exit} className="text-sm text-[#3b82f6] hover:underline">
+        <button type="button" onClick={exit} className="text-sm text-[#315442] hover:underline">
           返回编辑
         </button>
       </div>
@@ -111,7 +107,7 @@ export function PublishPreviewPage() {
 
   if (!pkg || !draft) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#f7f8fa] text-sm text-[#6b7280]">
+      <div className="flex h-screen items-center justify-center bg-[#f8f6ef] text-sm text-[#72766a]">
         正在准备预览…
       </div>
     )
@@ -126,13 +122,14 @@ export function PublishPreviewPage() {
       )}
 
       {/* 预览工具条：浮在右下角，不占前台自己的版位 */}
-      <div className="pointer-events-none absolute bottom-4 right-3 z-[60] flex max-w-[calc(100vw-1.5rem)] items-center">
-        <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-black/5 bg-white/95 py-1.5 pl-3 pr-1.5 shadow-lg backdrop-blur-md">
-          <span className="shrink-0 text-[11px] text-[#9ca3af]">预览中</span>
+      <div className="pointer-events-none absolute bottom-4 right-3 z-[60] flex max-w-[calc(100vw-1.5rem)] flex-col items-end gap-2">
+        <div className="pointer-events-auto w-full max-w-sm"><PublishAccess /></div>
+        <div className="journal-preview-toolbar pointer-events-auto flex items-center gap-1 rounded-full border border-black/5 bg-white/95 py-1.5 pl-3 pr-1.5 shadow-lg backdrop-blur-md">
+          <span className="shrink-0 text-[11px] text-[#7f8375]">旅程预览</span>
           <button
             type="button"
             onClick={exit}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 text-xs text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#111827]"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 text-xs text-[#72766a] hover:bg-[#efeee5] hover:text-[#253c31]"
           >
             <ArrowLeft size={12} />
             退出预览
@@ -140,7 +137,7 @@ export function PublishPreviewPage() {
           {published && (
             <Link
               to={`/tour/${draft.id}`}
-              className="inline-flex items-center gap-1 rounded-full border border-black/10 px-2.5 py-1 text-xs text-[#111827] hover:bg-[#f3f4f6]"
+              className="inline-flex items-center gap-1 rounded-full border border-black/10 px-2.5 py-1 text-xs text-[#253c31] hover:bg-[#efeee5]"
             >
               去前台看
               <ExternalLink size={12} />
@@ -151,7 +148,7 @@ export function PublishPreviewPage() {
             onClick={() => void onPublish()}
             disabled={busy || !!blocked}
             title={blocked || undefined}
-            className="shrink-0 cursor-pointer rounded-full bg-[#3b82f6] px-3.5 py-1.5 text-xs text-white hover:bg-[#2563eb] disabled:cursor-default disabled:opacity-50"
+            className="shrink-0 cursor-pointer rounded-full bg-[#315442] px-3.5 py-1.5 text-xs text-white hover:bg-[#243f32] disabled:cursor-default disabled:opacity-50"
           >
             {busy ? '发布中…' : '发布'}
           </button>
@@ -159,7 +156,7 @@ export function PublishPreviewPage() {
       </div>
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-[70] flex max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-full bg-[#111827] px-4 py-2 text-sm text-white shadow-lg">
+        <div className="fixed bottom-6 left-1/2 z-[70] flex max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-full bg-[#253c31] px-4 py-2 text-sm text-white shadow-lg">
           <span className="truncate">{toast}</span>
           <button type="button" className="shrink-0 text-white/60" onClick={() => setToast('')}>
             关闭

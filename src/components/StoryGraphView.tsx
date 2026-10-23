@@ -82,8 +82,8 @@ export function StoryGraphView({ layout, selectedId, onSelect }: StoryGraphViewP
                 width={node.width}
                 height={layout.nodeHeight}
                 rx={layout.nodeHeight / 2}
-                fill={selected ? '#111827' : node.isEnding ? '#f3f4f6' : '#ffffff'}
-                stroke={selected ? '#111827' : node.isEntry ? '#111827' : '#d1d5db'}
+                fill={selected ? '#253c31' : node.isEnding ? '#efeee5' : '#ffffff'}
+                stroke={selected ? '#253c31' : node.isEntry ? '#253c31' : '#d1d5db'}
                 strokeWidth={node.isEntry && !selected ? 2 : 1}
                 strokeDasharray={node.isEnding && !selected ? '4 3' : undefined}
               />
@@ -92,7 +92,7 @@ export function StoryGraphView({ layout, selectedId, onSelect }: StoryGraphViewP
                 y={node.y + 4}
                 textAnchor="middle"
                 fontSize="12"
-                fill={selected ? '#ffffff' : '#374151'}
+                fill={selected ? '#ffffff' : '#455448'}
                 fontWeight={node.isEntry || node.isEnding ? 500 : 400}
               >
                 {clip(node.name)}

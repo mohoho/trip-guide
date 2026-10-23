@@ -4,6 +4,7 @@ import { ArrowLeft, Sparkles } from 'lucide-react'
 import { GenProgressToast } from '../../components/GenProgressToast'
 import { SpotContentPanel } from '../../components/SpotContentPanel'
 import { VisitorAvatarPicker } from '../../components/VisitorAvatarPicker'
+import { StudioIntro } from '../../components/StudioIntro'
 import { fillCheckinIntro, fillCheckinNode } from '../../lib/aiDraft'
 import type { CheckinFields } from '../../lib/aiDraft'
 import { isSpotPlaceholder } from '../../lib/draftStore'
@@ -164,7 +165,7 @@ export function ContentCheckinPage({ draft, persist, initialSpotId }: ContentPag
 
   if (!selected) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f7f8fa] text-sm text-[#6b7280]">
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f6ef] text-sm text-[#72766a]">
         加载中…
       </div>
     )
@@ -173,12 +174,12 @@ export function ContentCheckinPage({ draft, persist, initialSpotId }: ContentPag
   const writtenCount = draft.spots.filter((s) => !isSpotPlaceholder(s)).length
 
   return (
-    <div className="h-screen flex flex-col bg-[#f7f8fa] text-[#111827]">
-      <header className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-5 h-14 bg-white border-b border-black/5">
+    <div className="studio-workspace studio-content h-screen flex flex-col bg-[#f8f6ef] text-[#253c31]">
+      <header className="studio-toolbar shrink-0 flex items-center justify-between gap-3 px-4 sm:px-5 h-14 bg-white border-b border-black/5">
         <button
           type="button"
           onClick={() => navigate(`/publish/${draft.id}`)}
-          className="inline-flex items-center gap-1 text-sm text-[#6b7280] hover:text-[#111827] shrink-0"
+          className="inline-flex items-center gap-1 text-sm text-[#72766a] hover:text-[#253c31] shrink-0"
         >
           <ArrowLeft size={16} />
           调整地点
@@ -186,17 +187,17 @@ export function ContentCheckinPage({ draft, persist, initialSpotId }: ContentPag
 
         <div className="min-w-0 text-center">
           <p className="truncate text-[15px] font-medium">{draft.name}</p>
-          <p className="text-[11px] text-[#9ca3af] tabular-nums">
+          <p className="text-[11px] text-[#7f8375] tabular-nums">
             {draft.spots.length} 个节点 · 已写 {writtenCount}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="studio-content-header-actions flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => void onGenerateContent()}
             disabled={busy}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm hover:bg-[#f3f4f6] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm hover:bg-[#efeee5] disabled:opacity-50"
           >
             <Sparkles size={14} />
             {busy ? '生成中…' : 'AI 生成讲解'}
@@ -204,7 +205,7 @@ export function ContentCheckinPage({ draft, persist, initialSpotId }: ContentPag
           <button
             type="button"
             onClick={() => navigate(`/publish/${draft.id}/preview?from=content`)}
-            className="rounded-lg bg-[#3b82f6] text-white px-3.5 py-1.5 text-sm hover:bg-[#2563eb]"
+            className="rounded-lg bg-[#315442] text-white px-3.5 py-1.5 text-sm hover:bg-[#243f32]"
           >
             预览
           </button>
@@ -212,9 +213,12 @@ export function ContentCheckinPage({ draft, persist, initialSpotId }: ContentPag
       </header>
 
       <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="mx-auto w-full max-w-[1200px] px-5 pt-7 sm:px-8"><StudioIntro step={3}
+          title="让每一站，都值得停留。" description="用文字和声音，讲述风景背后的故事。"
+          detail={`${writtenCount} / ${draft.spots.length} 站已完成讲解`} /></div>
         <div className="mx-auto w-full max-w-[1200px] px-5 py-6 sm:px-8 grid gap-6 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)] lg:items-start">
-          <aside className="space-y-1 rounded-2xl border border-black/[0.06] bg-white p-3 lg:sticky lg:top-6">
-            <p className="px-1 pb-1 text-xs font-medium text-[#6b7280]">漫游节点</p>
+          <aside className="studio-node-nav space-y-1 rounded-2xl border border-black/[0.06] bg-white p-3 lg:sticky lg:top-6">
+            <p className="px-1 pb-1 text-xs font-medium text-[#72766a]">漫游节点</p>
             {draft.spots.map((spot, index) => {
               const active = spot.id === selected.id
               return (
@@ -222,17 +226,18 @@ export function ContentCheckinPage({ draft, persist, initialSpotId }: ContentPag
                   key={spot.id}
                   type="button"
                   onClick={() => setSelectedId(spot.id)}
+                  aria-pressed={active}
                   className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left ${
-                    active ? 'bg-[#eff6ff]' : 'hover:bg-[#f9fafb]'
+                    active ? 'bg-[#f0f3e9]' : 'hover:bg-[#faf9f4]'
                   }`}
                 >
-                  <span className="w-5 h-5 rounded-full bg-[#111827] text-white text-[11px] flex items-center justify-center shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-[#253c31] text-white text-[11px] flex items-center justify-center shrink-0">
                     {index + 1}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-sm">{spot.name}</span>
                   <span
                     className={`shrink-0 text-[10px] ${
-                      isSpotPlaceholder(spot) ? 'text-amber-600' : 'text-[#9ca3af]'
+                      isSpotPlaceholder(spot) ? 'text-amber-600' : 'text-[#7f8375]'
                     }`}
                   >
                     {isSpotPlaceholder(spot) ? '未写' : '已写'}
@@ -246,7 +251,7 @@ export function ContentCheckinPage({ draft, persist, initialSpotId }: ContentPag
             <div className="rounded-2xl border border-black/[0.06] bg-white p-5">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm font-medium">景点简介</p>
-                <p className="text-[11px] text-[#9ca3af]">列表与封面用这段字</p>
+                <p className="text-[11px] text-[#7f8375]">列表与封面用这段字</p>
               </div>
               <VisitorAvatarPicker
                 value={draft.visitorAvatar}
@@ -258,14 +263,14 @@ export function ContentCheckinPage({ draft, persist, initialSpotId }: ContentPag
                 onChange={(e) => updateDraft({ description: e.target.value })}
                 rows={3}
                 placeholder="点「AI 生成讲解」会一并写好，也可以自己改"
-                className="w-full resize-none rounded-lg border border-black/8 bg-[#f9fafb] px-3 py-2 text-sm outline-none focus:border-[#3b82f6]/50 focus:bg-white"
+                className="w-full resize-none rounded-lg border border-black/8 bg-[#faf9f4] px-3 py-2 text-sm outline-none focus:border-[#315442]/50 focus:bg-white"
               />
             </div>
 
             <div className="rounded-2xl border border-black/[0.06] bg-white p-5">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm font-medium">节点内容</p>
-                <p className="text-[11px] text-[#9ca3af] tabular-nums">
+                <p className="text-[11px] text-[#7f8375] tabular-nums">
                   第 {draft.spots.findIndex((s) => s.id === selected.id) + 1} / {draft.spots.length} 站
                 </p>
               </div>
@@ -277,7 +282,7 @@ export function ContentCheckinPage({ draft, persist, initialSpotId }: ContentPag
               />
             </div>
 
-            <p className="pb-6 text-center text-xs text-[#9ca3af]">
+            <p className="pb-6 text-center text-xs text-[#7f8375]">
               坐标在「调整地点」里改；这一页只写文案
             </p>
           </section>

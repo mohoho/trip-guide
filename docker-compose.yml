@@ -6,12 +6,15 @@ services:
     image: trip-guide-web:latest
     container_name: trip-guide-web
     restart: unless-stopped
+    environment:
+      PUBLISH_ADMIN_TOKEN: ${PUBLISH_ADMIN_TOKEN:?请在 .env 中设置至少24位的发布口令}
     ports:
       # 宿主 80/443 被 1Panel 的 OpenResty 占着，这里走 8080。
-      # 只改冒号左边的宿主端口，右边必须留 80（容器内 Nginx 监听在 80）。
-      - "8080:80"
-    # 可选：把已发布的景点数据挂出来，之后加景点只需上传文件、不必重建镜像。
-    # 启用前先把本地 public/spots 整个拷到宿主机 /opt/trip-guide/spots，
-    # 否则挂载会盖掉镜像里那份，前台目录直接变空。
-    # volumes:
-    #   - /opt/trip-guide/spots:/usr/share/nginx/html/spots
+      # Node 同时提供页面、发布接口和动态景点数据。
+      - "8080:3001"
+    volumes:
+      - publish-data:/app/data
+    stop_grace_period: 30s
+
+volumes:
+  publish-data:

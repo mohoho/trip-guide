@@ -89,16 +89,16 @@ export function AskAiPanel({ name, clue }: { name: string; clue?: AskClue }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="cursor-pointer inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-white/95 px-3.5 py-2 text-sm shadow-sm backdrop-blur-md hover:bg-[#f9fafb]"
+        className="cursor-pointer inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-white/95 px-3.5 py-2 text-sm shadow-sm backdrop-blur-md hover:bg-[#faf9f4]"
       >
-        <MessageCircle size={15} className="text-[#3b82f6]" />
+        <MessageCircle size={15} className="text-[#315442]" />
         {open ? '收起问答' : '问线索'}
       </button>
 
       {open && (
         <div className="fixed right-3 top-16 z-40 w-[min(92vw,360px)] rounded-2xl border border-black/5 bg-white/95 p-4 shadow-lg backdrop-blur-md">
-          <div className="mb-3 flex items-center gap-2 text-[#111827]">
-            <HelpCircle size={15} className="text-[#6b7280]" />
+          <div className="mb-3 flex items-center gap-2 text-[#253c31]">
+            <HelpCircle size={15} className="text-[#72766a]" />
             <span className="text-sm font-medium">询问线索</span>
           </div>
           <div className="flex gap-2">
@@ -107,13 +107,13 @@ export function AskAiPanel({ name, clue }: { name: string; clue?: AskClue }) {
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && void ask()}
               placeholder="例如：我该怎么走？"
-              className="flex-1 rounded-xl border border-black/8 bg-[#f9fafb] px-3 py-2 text-sm outline-none focus:border-[#3b82f6]/50 focus:bg-white"
+              className="flex-1 rounded-xl border border-black/8 bg-[#faf9f4] px-3 py-2 text-sm outline-none focus:border-[#315442]/50 focus:bg-white"
             />
             <button
               type="button"
               onClick={() => void ask()}
               disabled={asking || !question.trim()}
-              className="cursor-pointer rounded-xl bg-[#3b82f6] px-3 py-2 text-white hover:bg-[#2563eb] disabled:opacity-45"
+              className="cursor-pointer rounded-xl bg-[#315442] px-3 py-2 text-white hover:bg-[#243f32] disabled:opacity-45"
             >
               {asking ? (
                 <span className="block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -123,7 +123,7 @@ export function AskAiPanel({ name, clue }: { name: string; clue?: AskClue }) {
             </button>
           </div>
           {answer && (
-            <div className="mt-3 rounded-xl border border-black/5 bg-[#f9fafb] p-3 text-sm leading-relaxed text-[#374151]">
+            <div className="mt-3 rounded-xl border border-black/5 bg-[#faf9f4] p-3 text-sm leading-relaxed text-[#455448]">
               {answer}
             </div>
           )}

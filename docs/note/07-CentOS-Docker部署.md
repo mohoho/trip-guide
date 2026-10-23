@@ -1,5 +1,7 @@
 # CentOS + Docker 部署（1Panel 上跑静态站）
 
+> **2026-10-23 更新**：以下是早期纯静态部署记录。当前 Docker 已改为 Node 一体服务，支持在线发布、上传图片和回收站，端口映射为 `8080:3001`，持久化卷为 `publish-data`，生产环境须设置 `PUBLISH_ADMIN_TOKEN`。请以仓库根目录 [README](../../README.md) 的当前部署步骤为准。早期关于“AI key 不出本机”的描述不准确：所有 `VITE_*` 配置都会进入前端产物。
+
 > 状态：**文件已就绪，服务器上尚未跑过**（2026-10-18）。本机没有 Docker，镜像没在本地构建验证，第一次 `build` 就是验证。
 > 起因：用户「我打算用 centos 可以帮我制作成一个 docker 进行部署吗」，并已在 1Panel（`http://49.235.29.49:8090`）里登录
 > 涉及：新增 `Dockerfile`、`docker-compose.yml`、`nginx.conf`、`.dockerignore`

@@ -28,3 +28,6 @@ dist-ssr
 
 # Local trash for deleted spots (dev-server recovery area, not source)
 .trash
+
+# Production publishing storage (back up the whole directory)
+data/
